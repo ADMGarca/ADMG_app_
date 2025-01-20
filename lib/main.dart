@@ -1,11 +1,9 @@
+import 'dart:io'; // Importando o pacote para usar 'exit'
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'dart:io';
+import 'package:http/http.dart' as http; // Para fazer requisições HTTP
+import 'dart:convert'; // Para manipular o JSON de resposta da API
 
 void main() {
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi; // Configuração necessária no Windows
   runApp(const MyApp());
 }
 
@@ -54,9 +52,9 @@ class HomePage extends StatelessWidget {
               },
               child: const Text('Pedido de Oração'),
             ),
-             ElevatedButton(
+            ElevatedButton(
               onPressed: () {
-                exit(0); // Encerra o aplicativo
+                exit(0); // Encerra o aplicativo, agora com o import 'dart:io'
               },
               child: const Text('Sair'),
               style: ElevatedButton.styleFrom(
@@ -70,27 +68,21 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// Função para abrir o banco de dados com validação
-Future<Database> _abrirBanco() async {
+// Função para fazer requisição à API e carregar avisos
+Future<List<Map<String, dynamic>>> carregarAvisos() async {
   try {
-    const String caminhoBanco = '\\\\NBWASHINGTON\\Users\\dpnew\\OneDrive\\Área de Trabalho\\Banco\\ADMG.db';
+    final response = await http.get(Uri.parse('http://localhost:5001/api/avisos'));
 
-    if (!File(caminhoBanco).existsSync()) {
-      throw Exception("Erro: O banco de dados não foi encontrado no caminho especificado.");
+    if (response.statusCode == 200) {
+      // Converte a resposta para uma lista de mapas
+      List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+      return result;
+    } else {
+      throw Exception('Falha ao carregar avisos');
     }
-
-    Database db = await databaseFactory.openDatabase(
-      caminhoBanco,
-      options: OpenDatabaseOptions(
-        version: 1,
-        onOpen: (db) => print("Banco de dados conectado com sucesso!"),
-      ),
-    );
-
-    return db;
   } catch (e) {
-    print("Erro ao abrir o banco: $e");
-    rethrow;
+    print('Erro ao carregar avisos: $e');
+    throw e;
   }
 }
 
@@ -112,30 +104,27 @@ class _AvisosPageState extends State<AvisosPage> {
     carregarAvisos();
   }
 
-  Future<void> carregarAvisos() async {
-    try {
-      Database db = await _abrirBanco();
-      List<Map<String, dynamic>> result = await db.rawQuery('''
-        SELECT strftime('%d/%m/%Y', Data) as Data,
-               Status as Importancia,
-               Descricao as Aviso
-        FROM Aviso order by Status
-      ''');
+Future<void> carregarAvisos() async {
+  try {
+    final response = await http.get(Uri.parse('http://localhost:5001/api/avisos'));
 
-      print("Dados recuperados da tabela Aviso: $result");
-
+    if (response.statusCode == 200) {
+      // Converte a resposta para uma lista de mapas
+      List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
       setState(() {
-        avisos = result;
-        carregando = false;
+        avisos = result;  // Agora você vai atualizar o estado com os dados recebidos
+        carregando = false; // Alterar o carregamento para false
       });
-    } catch (e) {
-      print('Erro ao carregar avisos: $e');
-      setState(() {
-        carregando = false;
-      });
+    } else {
+      throw Exception('Falha ao carregar avisos');
     }
+  } catch (e) {
+    print('Erro ao carregar avisos: $e');
+    setState(() {
+      carregando = false;  // Alterar o carregamento para false mesmo em caso de erro
+    });
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -200,14 +189,8 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
 
   Future<void> carregarPedidos() async {
     try {
-      Database db = await _abrirBanco();
-      List<Map<String, dynamic>> result = await db.rawQuery('''
-        SELECT strftime('%d/%m/%Y', Data) as Data,
-               Descricao as Oração
-        FROM PedidoOracao 
-      ''');
-
-      print("Dados recuperados da tabela PedidoOracao: $result");
+      List<Map<String, dynamic>> result = await carregarPedidosDaAPI();
+      print("Dados recuperados da API: $result");
 
       setState(() {
         pedidos = result;
@@ -218,6 +201,23 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
       setState(() {
         carregando = false;
       });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> carregarPedidosDaAPI() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:5001/api/pedidos_oracao'));
+
+      if (response.statusCode == 200) {
+        // Converte a resposta para uma lista de mapas
+        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+        return result;
+      } else {
+        throw Exception('Falha ao carregar pedidos de oração');
+      }
+    } catch (e) {
+      print('Erro ao carregar pedidos de oração: $e');
+      throw e;
     }
   }
 
