@@ -33,6 +33,7 @@ dependencies:
   sqflite: ^2.0.0+4
   sqflite_common_ffi: ^2.0.0
   http: ^1.2.2 # Adicione essa linha
+  intl: ^0.18.0 # Adicione esta linha
 
 dev_dependencies:
   flutter_test:
