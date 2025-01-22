@@ -58,13 +58,13 @@ class HomePage extends StatelessWidget {
                 child: const Text('Avisos'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
                 ),
               ),
             ),
             const SizedBox(height: 20),
             SizedBox(
-              width: 200,
+              width: 300,
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
@@ -75,8 +75,8 @@ class HomePage extends StatelessWidget {
                 },
                 child: const Text('Pedido de Oração'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightBlue,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                  backgroundColor: const Color.fromARGB(255, 144, 119, 240),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
                 ),
               ),
             ),
@@ -91,7 +91,7 @@ class HomePage extends StatelessWidget {
                 child: const Text('Sair'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
                 ),
               ),
             ),
@@ -208,19 +208,19 @@ class PaginaDeAvisos extends StatelessWidget {
           DataColumn(
             label: Text(
               'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
             ),
           ),
           DataColumn(
             label: Text(
               'Importância',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
             ),
           ),
           DataColumn(
             label: Text(
               'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
             ),
           ),
         ],
@@ -370,13 +370,13 @@ class PaginaDePedidos extends StatelessWidget {
           DataColumn(
             label: Text(
               'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
             ),
           ),
           DataColumn(
             label: Text(
               'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
             ),
           ),
         ],
