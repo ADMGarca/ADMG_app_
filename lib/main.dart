@@ -193,7 +193,7 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
 
   Future<List<Map<String, dynamic>>> carregarPedidosDaAPI() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
+      final response = await http.get(Uri.parse('192.168.15.22:5001/api/pedidos'));
 
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
