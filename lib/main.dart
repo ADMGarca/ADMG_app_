@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                exit(0); // Encerra o aplicativo, agora com o import 'dart:io'
+                exit(0); // Encerra o aplicativo
               },
               child: const Text('Sair'),
               style: ElevatedButton.styleFrom(
@@ -68,14 +68,15 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// Função para fazer requisição à API e carregar avisos
+/// Função para fazer requisição à API e carregar avisos
 Future<List<Map<String, dynamic>>> carregarAvisos() async {
   try {
-    final response = await http.get(Uri.parse('http://localhost:5001/api/avisos'));
+    final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
+    print('Resposta da API: ${response.body}'); // Verifique o conteúdo da resposta
 
     if (response.statusCode == 200) {
-      // Converte a resposta para uma lista de mapas
       List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+      print('Dados carregados: $result'); // Verifique os dados carregados
       return result;
     } else {
       throw Exception('Falha ao carregar avisos');
@@ -86,7 +87,7 @@ Future<List<Map<String, dynamic>>> carregarAvisos() async {
   }
 }
 
-// Tela de Avisos
+/// Tela de Avisos
 class AvisosPage extends StatefulWidget {
   const AvisosPage({super.key});
 
@@ -104,27 +105,28 @@ class _AvisosPageState extends State<AvisosPage> {
     carregarAvisos();
   }
 
-Future<void> carregarAvisos() async {
-  try {
-    final response = await http.get(Uri.parse('http://localhost:5001/api/avisos'));
+  Future<void> carregarAvisos() async {
+    try {
+      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
+      print('Resposta da API: ${response.body}'); // Verifique o conteúdo da resposta
 
-    if (response.statusCode == 200) {
-      // Converte a resposta para uma lista de mapas
-      List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+      if (response.statusCode == 200) {
+        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+        setState(() {
+          avisos = result;
+          carregando = false; // Altera para carregamento concluído
+        });
+      } else {
+        throw Exception('Falha ao carregar avisos');
+      }
+    } catch (e) {
+      print('Erro ao carregar avisos: $e');
       setState(() {
-        avisos = result;  // Agora você vai atualizar o estado com os dados recebidos
-        carregando = false; // Alterar o carregamento para false
+        carregando = false;
       });
-    } else {
-      throw Exception('Falha ao carregar avisos');
     }
-  } catch (e) {
-    print('Erro ao carregar avisos: $e');
-    setState(() {
-      carregando = false;  // Alterar o carregamento para false mesmo em caso de erro
-    });
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,30 +134,15 @@ Future<void> carregarAvisos() async {
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : avisos.isEmpty
-              ? const Center(child: Text('Nenhum aviso disponível'))
+              ? const Center(child: Text('Nenhum Aviso disponível'))
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
                     columns: avisos.first.keys.map((key) => DataColumn(label: Text(key))).toList(),
-                    rows: avisos.map((aviso) {
+                    rows: avisos.map((avisos) {
                       return DataRow(
-                        cells: aviso.entries.map((entry) {
-                          if (entry.key == 'Importancia') {
-                            return DataCell(
-                              Text(
-                                entry.value.toString(),
-                                style: TextStyle(
-                                  color: entry.value == 'Urgente'
-                                      ? Colors.red
-                                      : entry.value == 'Importante'
-                                          ? Colors.green
-                                          : Colors.black,
-                                ),
-                              ),
-                            );
-                          } else {
-                            return DataCell(Text(entry.value.toString()));
-                          }
+                        cells: avisos.entries.map((entry) {
+                          return DataCell(Text(entry.value.toString()));
                         }).toList(),
                       );
                     }).toList(),
@@ -206,10 +193,9 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
 
   Future<List<Map<String, dynamic>>> carregarPedidosDaAPI() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:5001/api/pedidos_oracao'));
+      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
 
       if (response.statusCode == 200) {
-        // Converte a resposta para uma lista de mapas
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
         return result;
       } else {
