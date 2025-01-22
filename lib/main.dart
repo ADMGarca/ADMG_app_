@@ -45,40 +45,54 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AvisosPage()),
-                );
-              },
-              child: const Text('Avisos'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.yellow,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AvisosPage()),
+                  );
+                },
+                child: const Text('Avisos'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow,
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PedidoOracaoPage()),
-                );
-              },
-              child: const Text('Pedido de Oração'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlue,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PedidoOracaoPage()),
+                  );
+                },
+                child: const Text('Pedido de Oração'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightBlue,
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                exit(0);
-              },
-              child: const Text('Sair'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {
+                  exit(0);
+                },
+                child: const Text('Sair'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                ),
               ),
             ),
           ],
@@ -189,6 +203,7 @@ class PaginaDeAvisos extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: DataTable(
+        columnSpacing: 20, // Adicionado para expandir as colunas
         columns: const [
           DataColumn(
             label: Text(
@@ -234,7 +249,7 @@ class PaginaDeAvisos extends StatelessWidget {
               ),
               DataCell(
                 SizedBox(
-                  width: 200,
+                  width: 600, // Adicionado largura maior para "Descrição"
                   child: SelectableText(
                     descricao,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -350,6 +365,7 @@ class PaginaDePedidos extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: DataTable(
+        columnSpacing: 20, // Adicionado para expandir as colunas
         columns: const [
           DataColumn(
             label: Text(
@@ -378,7 +394,7 @@ class PaginaDePedidos extends StatelessWidget {
               ),
               DataCell(
                 SizedBox(
-                  width: 200,
+                  width: 600, // Adicionado largura maior para "Descrição"
                   child: SelectableText(
                     descricao,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
