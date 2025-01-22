@@ -1,7 +1,7 @@
-import 'dart:io'; // Importando o pacote para usar 'exit'
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Para fazer requisições HTTP
-import 'dart:convert'; // Para manipular o JSON de resposta da API
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                exit(0); // Encerra o aplicativo
+                exit(0);
               },
               child: const Text('Sair'),
               style: ElevatedButton.styleFrom(
@@ -65,25 +65,6 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Função para fazer requisição à API e carregar avisos
-Future<List<Map<String, dynamic>>> carregarAvisos() async {
-  try {
-    final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
-    print('Resposta da API: ${response.body}'); // Verifique o conteúdo da resposta
-
-    if (response.statusCode == 200) {
-      List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
-      print('Dados carregados: $result'); // Verifique os dados carregados
-      return result;
-    } else {
-      throw Exception('Falha ao carregar avisos');
-    }
-  } catch (e) {
-    print('Erro ao carregar avisos: $e');
-    throw e;
   }
 }
 
@@ -108,13 +89,11 @@ class _AvisosPageState extends State<AvisosPage> {
   Future<void> carregarAvisos() async {
     try {
       final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
-      print('Resposta da API: ${response.body}'); // Verifique o conteúdo da resposta
-
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
         setState(() {
           avisos = result;
-          carregando = false; // Altera para carregamento concluído
+          carregando = false;
         });
       } else {
         throw Exception('Falha ao carregar avisos');
@@ -138,25 +117,58 @@ class _AvisosPageState extends State<AvisosPage> {
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    columns: avisos.first.keys.map((key) => DataColumn(label: Text(key))).toList(),
-                    rows: avisos.map((avisos) {
+                    columns: const [
+                      DataColumn(label: Text('Data')),
+                      DataColumn(label: Text('Importância')),
+                      DataColumn(label: Text('Descrição')),
+                    ],
+                    rows: avisos.map((aviso) {
+                      final importancia = aviso['status'] ?? 'Normal';
+                      final data = aviso['data'] ?? '';
+                      final descricao = aviso['descricao'] ?? '';
+
                       return DataRow(
-                        cells: avisos.entries.map((entry) {
-                          return DataCell(Text(entry.value.toString()));
-                        }).toList(),
+                        cells: [
+                          DataCell(Text(data)),
+                          DataCell(
+                            Text(
+                              importancia,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: importancia == 'Urgente' ? Colors.red : Colors.black,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              descricao,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18, // Aumentando o tamanho da fonte
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }).toList(),
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Icon(Icons.arrow_back),
+        onPressed: () {
+          setState(() {
+            carregando = true;
+          });
+          carregarAvisos(); // Atualiza as informações
+        },
+        child: const Icon(Icons.refresh),
+        backgroundColor: Colors.blue,
       ),
     );
   }
 }
 
-// Tela de Pedidos de Oração
+/// Tela de Pedidos de Oração
 class PedidoOracaoPage extends StatefulWidget {
   const PedidoOracaoPage({super.key});
 
@@ -176,34 +188,21 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
 
   Future<void> carregarPedidos() async {
     try {
-      List<Map<String, dynamic>> result = await carregarPedidosDaAPI();
-      print("Dados recuperados da API: $result");
-
-      setState(() {
-        pedidos = result;
-        carregando = false;
-      });
-    } catch (e) {
-      print('Erro ao carregar pedidos de oração: $e');
-      setState(() {
-        carregando = false;
-      });
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> carregarPedidosDaAPI() async {
-    try {
-      final response = await http.get(Uri.parse('192.168.15.22:5001/api/pedidos'));
-
+      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/pedidos'));
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
-        return result;
+        setState(() {
+          pedidos = result;
+          carregando = false;
+        });
       } else {
         throw Exception('Falha ao carregar pedidos de oração');
       }
     } catch (e) {
       print('Erro ao carregar pedidos de oração: $e');
-      throw e;
+      setState(() {
+        carregando = false;
+      });
     }
   }
 
@@ -218,19 +217,40 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    columns: pedidos.first.keys.map((key) => DataColumn(label: Text(key))).toList(),
+                    columns: const [
+                      DataColumn(label: Text('Data')),
+                      DataColumn(label: Text('Descrição')),
+                    ],
                     rows: pedidos.map((pedido) {
+                      final data = pedido['data'] ?? '';
+                      final descricao = pedido['descricao'] ?? '';
+
                       return DataRow(
-                        cells: pedido.entries.map((entry) {
-                          return DataCell(Text(entry.value.toString()));
-                        }).toList(),
+                        cells: [
+                          DataCell(Text(data)),
+                          DataCell(
+                            Text(
+                              descricao,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18, // Aumentando o tamanho da fonte
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }).toList(),
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Icon(Icons.arrow_back),
+        onPressed: () {
+          setState(() {
+            carregando = true;
+          });
+          carregarPedidos(); // Atualiza as informações
+        },
+        child: const Icon(Icons.refresh),
+        backgroundColor: Colors.blue,
       ),
     );
   }
