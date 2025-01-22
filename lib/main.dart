@@ -123,7 +123,7 @@ class _AvisosPageState extends State<AvisosPage> {
 
   Future<void> carregarAvisos() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
+      final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/avisos'));
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
         setState(() {
@@ -285,7 +285,7 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
 
   Future<void> carregarPedidos() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/pedidos'));
+      final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/pedidos'));
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
         setState(() {
