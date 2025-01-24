@@ -1,3 +1,4 @@
+import 'dart:async'; 
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -55,11 +56,11 @@ class HomePage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AvisosPage()),
                   );
                 },
-                child: const Text('Avisos'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow,
                   textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
                 ),
+                child: const Text('Avisos'),
               ),
             ),
             const SizedBox(height: 20),
@@ -73,11 +74,11 @@ class HomePage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const PedidoOracaoPage()),
                   );
                 },
-                child: const Text('Pedido de Oração'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 144, 119, 240),
                   textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
                 ),
+                child: const Text('Pedido de Oração'),
               ),
             ),
             const SizedBox(height: 20),
@@ -88,11 +89,11 @@ class HomePage extends StatelessWidget {
                 onPressed: () {
                   exit(0);
                 },
-                child: const Text('Sair'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
                 ),
+                child: const Text('Sair'),
               ),
             ),
           ],
@@ -114,11 +115,21 @@ class _AvisosPageState extends State<AvisosPage> {
   List<Map<String, dynamic>> avisosFiltrados = [];
   bool carregando = true;
   String busca = '';
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
     carregarAvisos();
+    timer = Timer.periodic(Duration(minutes: 2), (Timer t) {
+      carregarAvisos();
+    });
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   Future<void> carregarAvisos() async {
@@ -186,79 +197,8 @@ class _AvisosPageState extends State<AvisosPage> {
           });
           carregarAvisos();
         },
-        child: const Icon(Icons.refresh),
         backgroundColor: Colors.blue,
-      ),
-    );
-  }
-}
-
-class PaginaDeAvisos extends StatelessWidget {
-  const PaginaDeAvisos({super.key, required this.avisos});
-
-  final List<Map<String, dynamic>> avisos;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: DataTable(
-        columnSpacing: 20, // Adicionado para expandir as colunas
-        columns: const [
-          DataColumn(
-            label: Text(
-              'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Importância',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
-            ),
-          ),
-        ],
-        rows: avisos.map((aviso) {
-          final importancia = aviso['status'] ?? 'Normal';
-          final data = aviso['data'] ?? '';
-          final descricao = aviso['descricao'] ?? '';
-
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(
-                  HomePage().formatarData(data),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                ),
-              ),
-              DataCell(
-                Text(
-                  importancia,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: importancia == 'Urgente' ? Colors.red : Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              DataCell(
-                SizedBox(
-                  width: 600, // Adicionado largura maior para "Descrição"
-                  child: SelectableText(
-                    descricao,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+        child: const Icon(Icons.refresh),
       ),
     );
   }
@@ -276,11 +216,21 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
   List<Map<String, dynamic>> pedidosFiltrados = [];
   bool carregando = true;
   String busca = '';
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
     carregarPedidos();
+    timer = Timer.periodic(Duration(minutes: 2), (Timer t) {
+      carregarPedidos();
+    });
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   Future<void> carregarPedidos() async {
@@ -348,9 +298,111 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
           });
           carregarPedidos();
         },
-        child: const Icon(Icons.refresh),
         backgroundColor: Colors.blue,
+        child: const Icon(Icons.refresh),
       ),
+    );
+  }
+}
+
+class PaginaDeAvisos extends StatelessWidget {
+  const PaginaDeAvisos({super.key, required this.avisos});
+
+  final List<Map<String, dynamic>> avisos;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: DataTable(
+        columnSpacing: 20,
+        columns: const [
+          DataColumn(
+            label: Text(
+              'Data',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Importância',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Descrição',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+        ],
+        rows: avisos.map((aviso) {
+          final importancia = aviso['status'] ?? 'Normal';
+          final data = aviso['data'] ?? '';
+          final descricao = aviso['descricao'] ?? '';
+
+          return DataRow(
+            cells: [
+              DataCell(
+                Text(
+                  HomePage().formatarData(data),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                ),
+              ),
+              DataCell(
+                GestureDetector(
+                  onTap: () {
+                    exibirDescricaoCompleta(context, descricao);
+                  },
+                  child: SizedBox(
+                    width: 600,
+                    child: Text(
+                      descricao,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis, 
+                    ),
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  importancia,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: importancia == 'Urgente' ? Colors.red : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  void exibirDescricaoCompleta(BuildContext context, String descricao) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Descrição Completa'),
+          content: SingleChildScrollView(
+            child: Text(
+              descricao,
+              style: const TextStyle(fontSize: 18),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Fechar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -365,18 +417,18 @@ class PaginaDePedidos extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: DataTable(
-        columnSpacing: 20, // Adicionado para expandir as colunas
+        columnSpacing: 20,
         columns: const [
           DataColumn(
             label: Text(
               'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey, fontSize: 20),
             ),
           ),
           DataColumn(
             label: Text(
               'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ),
         ],
@@ -393,11 +445,17 @@ class PaginaDePedidos extends StatelessWidget {
                 ),
               ),
               DataCell(
-                SizedBox(
-                  width: 600, // Adicionado largura maior para "Descrição"
-                  child: SelectableText(
-                    descricao,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                GestureDetector(
+                  onTap: () {
+                    exibirDescricaoCompleta(context, descricao);
+                  },
+                  child: SizedBox(
+                    width: 600,
+                    child: Text(
+                      descricao,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ),
@@ -405,6 +463,31 @@ class PaginaDePedidos extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+
+  void exibirDescricaoCompleta(BuildContext context, String descricao) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Descrição Completa'),
+          content: SingleChildScrollView(
+            child: Text(
+              descricao,
+              style: const TextStyle(fontSize: 18),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Fechar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
