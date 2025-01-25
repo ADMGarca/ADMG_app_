@@ -24,7 +24,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -37,6 +36,7 @@ class HomePage extends StatelessWidget {
       return data;
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +121,7 @@ class _AvisosPageState extends State<AvisosPage> {
   void initState() {
     super.initState();
     carregarAvisos();
-    timer = Timer.periodic(Duration(minutes: 2), (Timer t) {
+    timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
       carregarAvisos();
     });
   }
@@ -137,6 +137,27 @@ class _AvisosPageState extends State<AvisosPage> {
       final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/avisos'));
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+
+        // Ordenar avisos: "URGENTE" primeiro
+        result.sort((a, b) {
+          final statusA = (a['status'] ?? '').toString().toUpperCase();
+          final statusB = (b['status'] ?? '').toString().toUpperCase();
+          if (statusA == 'URGENTE' && statusB != 'URGENTE') return -1;
+          if (statusA != 'URGENTE' && statusB == 'URGENTE') return 1;
+          return 0;
+        });
+
+        // Verificar se há aviso urgente
+        if (result.any((aviso) => aviso['status'] == 'URGENTE')) {
+          // Notificar o usuário na Home
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Há um aviso URGENTE!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+
         setState(() {
           avisos = result;
           avisosFiltrados = result;
@@ -222,7 +243,7 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
   void initState() {
     super.initState();
     carregarPedidos();
-    timer = Timer.periodic(Duration(minutes: 2), (Timer t) {
+    timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
       carregarPedidos();
     });
   }
@@ -325,7 +346,7 @@ class PaginaDeAvisos extends StatelessWidget {
           ),
           DataColumn(
             label: Text(
-              'Importância',
+              'Status',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ),
@@ -336,47 +357,52 @@ class PaginaDeAvisos extends StatelessWidget {
             ),
           ),
         ],
-        rows: avisos.map((aviso) {
-          final importancia = aviso['status'] ?? 'Normal';
-          final data = aviso['data'] ?? '';
-          final descricao = aviso['descricao'] ?? '';
+       rows: avisos.map((aviso) {
+  final status = aviso['status'] ?? 'Normal'; // Aqui usamos 'status' 
+  final data = aviso['data'] ?? '';
+  final descricao = aviso['descricao'] ?? ''; // Mantemos 'descricao' para descrição
 
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(
-                  HomePage().formatarData(data),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                ),
-              ),
-              DataCell(
-                GestureDetector(
-                  onTap: () {
-                    exibirDescricaoCompleta(context, descricao);
-                  },
-                  child: SizedBox(
-                    width: 600,
-                    child: Text(
-                      descricao,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      overflow: TextOverflow.ellipsis, 
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Text(
-                  importancia,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: importancia == 'Urgente' ? Colors.red : Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
+  return DataRow(
+    cells: [
+      DataCell(
+        Text(
+          HomePage().formatarData(data),
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+        ),
+      ),
+     DataCell(
+  Text(
+    status, // Exibir o status
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      color: status == 'URGENTE'
+          ? Colors.red
+          : status == 'SEMANAL'
+              ? Colors.blue
+              : Colors.black,
+      fontSize: 16,
+    ),
+  ),
+),
+      DataCell(
+        GestureDetector(
+          onTap: () {
+            exibirDescricaoCompleta(context, descricao);
+          },
+          child: SizedBox(
+            width: 600,
+            child: Text(
+              descricao,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}).toList(),
+
       ),
     );
   }
