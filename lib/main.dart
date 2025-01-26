@@ -1,4 +1,4 @@
-import 'dart:async'; 
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -24,24 +24,79 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  String formatarData(String data) {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final AvisoService _avisoService = AvisoService();
+  bool temAvisoUrgente = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _avisoService.avisoUrgenteStream.listen((hasUrgent) {
+      setState(() {
+        temAvisoUrgente = hasUrgent;
+      });
+    });
+    carregarAvisos();
+  }
+
+  Future<void> carregarAvisos() async {
     try {
-      final dateTime = DateTime.parse(data);
-      final format = DateFormat('dd/MM/yyyy HH:mm');
-      return format.format(dateTime);
+      final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/avisos'));
+      if (response.statusCode == 200) {
+        List<Map<String, dynamic>> avisos = List<Map<String, dynamic>>.from(json.decode(response.body));
+        _avisoService.verificarAvisosUrgentes(avisos);
+      } else {
+        throw Exception('Falha ao carregar avisos');
+      }
     } catch (e) {
-      return data;
+      print('Erro ao carregar avisos: $e');
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ADMG - Início')),
+      appBar: AppBar(
+        title: const Text('ADMG - Início'),
+        actions: [
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications, size: 28),
+                if (temAvisoUrgente)
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 12,
+                        minHeight: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AvisosPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -103,230 +158,357 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class AvisosPage extends StatefulWidget {
-  const AvisosPage({super.key});
-
-  @override
-  _AvisosPageState createState() => _AvisosPageState();
+class Utils {
+  static String formatarData(String data) {
+    try {
+      final dateTime = DateTime.parse(data);
+      final format = DateFormat('dd/MM/yyyy HH:mm');
+      return format.format(dateTime);
+    } catch (e) {
+      return data;
+    }
+  }
 }
 
-class _AvisosPageState extends State<AvisosPage> {
-  List<Map<String, dynamic>> avisos = [];
-  List<Map<String, dynamic>> avisosFiltrados = [];
-  bool carregando = true;
-  String busca = '';
-  Timer? timer;
 
-  @override
-  void initState() {
-    super.initState();
-    carregarAvisos();
-    timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+
+
+    @override
+    Widget build(BuildContext context) {
+      var temAvisoUrgente;
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('ADMG - Início'),
+          actions: [
+            IconButton(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.notifications, size: 28),
+                  if (temAvisoUrgente)
+                    Positioned(
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 12,
+                          minHeight: 12,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AvisosPage()),
+                );
+              },
+            ),
+          ],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AvisosPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
+                  ),
+                  child: const Text('Avisos'),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 300,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PedidoOracaoPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 144, 119, 240),
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
+                  ),
+                  child: const Text('Pedido de Oração'),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 200,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    exit(0);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
+                  ),
+                  child: const Text('Sair'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  
+
+  class AvisoService {
+    final StreamController<bool> _avisoUrgenteController = StreamController<bool>.broadcast();
+
+    Stream<bool> get avisoUrgenteStream => _avisoUrgenteController.stream;
+
+    void verificarAvisosUrgentes(List<Map<String, dynamic>> avisos) {
+      final temAvisoUrgente = avisos.any((aviso) => aviso['status'] == 'URGENTE');
+      _avisoUrgenteController.add(temAvisoUrgente);
+    }
+
+    void dispose() {
+      _avisoUrgenteController.close();
+    }
+  }
+  class AvisosPage extends StatefulWidget {
+    const AvisosPage({super.key});
+
+    @override
+    _AvisosPageState createState() => _AvisosPageState();
+  }
+
+  class _AvisosPageState extends State<AvisosPage> {
+    List<Map<String, dynamic>> avisos = [];
+    List<Map<String, dynamic>> avisosFiltrados = [];
+    bool carregando = true;
+    String busca = '';
+    Timer? timer;
+
+    @override
+    void initState() {
+      super.initState();
       carregarAvisos();
-    });
-  }
+      timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+        carregarAvisos();
+      });
+    }
 
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-  }
+    @override
+    void dispose() {
+      timer?.cancel();
+      super.dispose();
+    }
 
-  Future<void> carregarAvisos() async {
-    try {
-      final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/avisos'));
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+    Future<void> carregarAvisos() async {
+      try {
+        final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/avisos'));
+        if (response.statusCode == 200) {
+          List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
 
-        // Ordenar avisos: "URGENTE" primeiro
-        result.sort((a, b) {
-          final statusA = (a['status'] ?? '').toString().toUpperCase();
-          final statusB = (b['status'] ?? '').toString().toUpperCase();
-          if (statusA == 'URGENTE' && statusB != 'URGENTE') return -1;
-          if (statusA != 'URGENTE' && statusB == 'URGENTE') return 1;
-          return 0;
-        });
+          // Ordenar avisos: "URGENTE" primeiro
+          result.sort((a, b) {
+            final statusA = (a['status'] ?? '').toString().toUpperCase();
+            final statusB = (b['status'] ?? '').toString().toUpperCase();
+            if (statusA == 'URGENTE' && statusB != 'URGENTE') return -1;
+            if (statusA != 'URGENTE' && statusB == 'URGENTE') return 1;
+            return 0;
+          });
 
-        // Verificar se há aviso urgente
-        if (result.any((aviso) => aviso['status'] == 'URGENTE')) {
-          // Notificar o usuário na Home
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Há um aviso URGENTE!'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          // Verificar se há aviso urgente
+          if (result.any((aviso) => aviso['status'] == 'URGENTE')) {
+            // Notificar o usuário na Home
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Há avisos URGENTE!'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+
+          setState(() {
+            avisos = result;
+            avisosFiltrados = result;
+            carregando = false;
+          });
+        } else {
+          throw Exception('Falha ao carregar avisos');
         }
-
+      } catch (e) {
+        print('Erro ao carregar avisos: $e');
         setState(() {
-          avisos = result;
-          avisosFiltrados = result;
           carregando = false;
         });
-      } else {
-        throw Exception('Falha ao carregar avisos');
       }
-    } catch (e) {
-      print('Erro ao carregar avisos: $e');
+    }
+
+    void filtrarAvisos(String textoBusca) {
       setState(() {
-        carregando = false;
+        busca = textoBusca;
+        avisosFiltrados = avisos
+            .where((aviso) => aviso['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
+            .toList();
       });
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Avisos')),
+        body: carregando
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Buscar Avisos',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: filtrarAvisos,
+                    ),
+                  ),
+                  Expanded(
+                    child: avisosFiltrados.isEmpty
+                        ? const Center(child: Text('Nenhum aviso encontrado'))
+                        : SingleChildScrollView(
+                            child: PaginaDeAvisos(avisos: avisosFiltrados),
+                          ),
+                  ),
+                ],
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              carregando = true;
+            });
+            carregarAvisos();
+          },
+          backgroundColor: Colors.blue,
+          child: const Icon(Icons.refresh),
+        ),
+      );
     }
   }
 
-  void filtrarAvisos(String textoBusca) {
-    setState(() {
-      busca = textoBusca;
-      avisosFiltrados = avisos
-          .where((aviso) => aviso['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
-          .toList();
-    });
+  class PedidoOracaoPage extends StatefulWidget {
+    const PedidoOracaoPage({super.key});
+
+    @override
+    _PedidoOracaoPageState createState() => _PedidoOracaoPageState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Avisos')),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar Avisos',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarAvisos,
-                  ),
-                ),
-                Expanded(
-                  child: avisosFiltrados.isEmpty
-                      ? const Center(child: Text('Nenhum aviso encontrado'))
-                      : SingleChildScrollView(
-                          child: PaginaDeAvisos(avisos: avisosFiltrados),
-                        ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            carregando = true;
-          });
-          carregarAvisos();
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.refresh),
-      ),
-    );
-  }
-}
+  class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
+    List<Map<String, dynamic>> pedidos = [];
+    List<Map<String, dynamic>> pedidosFiltrados = [];
+    bool carregando = true;
+    String busca = '';
+    Timer? timer;
 
-class PedidoOracaoPage extends StatefulWidget {
-  const PedidoOracaoPage({super.key});
-
-  @override
-  _PedidoOracaoPageState createState() => _PedidoOracaoPageState();
-}
-
-class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
-  List<Map<String, dynamic>> pedidos = [];
-  List<Map<String, dynamic>> pedidosFiltrados = [];
-  bool carregando = true;
-  String busca = '';
-  Timer? timer;
-
-  @override
-  void initState() {
-    super.initState();
-    carregarPedidos();
-    timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+    @override
+    void initState() {
+      super.initState();
       carregarPedidos();
-    });
-  }
+      timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+        carregarPedidos();
+      });
+    }
 
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-  }
+    @override
+    void dispose() {
+      timer?.cancel();
+      super.dispose();
+    }
 
-  Future<void> carregarPedidos() async {
-    try {
-      final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/pedidos'));
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+    Future<void> carregarPedidos() async {
+      try {
+        final response = await http.get(Uri.parse('http://172.16.2.113:5001/api/pedidos'));
+        if (response.statusCode == 200) {
+          List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
+          setState(() {
+            pedidos = result;
+            pedidosFiltrados = result;
+            carregando = false;
+          });
+        } else {
+          throw Exception('Falha ao carregar pedidos de oração');
+        }
+      } catch (e) {
+        print('Erro ao carregar pedidos de oração: $e');
         setState(() {
-          pedidos = result;
-          pedidosFiltrados = result;
           carregando = false;
         });
-      } else {
-        throw Exception('Falha ao carregar pedidos de oração');
       }
-    } catch (e) {
-      print('Erro ao carregar pedidos de oração: $e');
+    }
+
+    void filtrarPedidos(String textoBusca) {
       setState(() {
-        carregando = false;
+        busca = textoBusca;
+        pedidosFiltrados = pedidos
+            .where((pedido) => pedido['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
+            .toList();
       });
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Pedido de Oração')),
+        body: carregando
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Buscar Pedidos',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: filtrarPedidos,
+                    ),
+                  ),
+                  Expanded(
+                    child: pedidosFiltrados.isEmpty
+                        ? const Center(child: Text('Nenhum pedido encontrado'))
+                        : SingleChildScrollView(
+                            child: PaginaDePedidos(pedidos: pedidosFiltrados),
+                          ),
+                  ),
+                ],
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              carregando = true;
+            });
+            carregarPedidos();
+          },
+          backgroundColor: Colors.blue,
+          child: const Icon(Icons.refresh),
+        ),
+      );
     }
   }
 
-  void filtrarPedidos(String textoBusca) {
-    setState(() {
-      busca = textoBusca;
-      pedidosFiltrados = pedidos
-          .where((pedido) => pedido['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
-          .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pedido de Oração')),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar Pedidos',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarPedidos,
-                  ),
-                ),
-                Expanded(
-                  child: pedidosFiltrados.isEmpty
-                      ? const Center(child: Text('Nenhum pedido encontrado'))
-                      : SingleChildScrollView(
-                          child: PaginaDePedidos(pedidos: pedidosFiltrados),
-                        ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            carregando = true;
-          });
-          carregarPedidos();
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.refresh),
-      ),
-    );
-  }
-}
-
-class PaginaDeAvisos extends StatelessWidget {
+  class PaginaDeAvisos extends StatelessWidget {
   const PaginaDeAvisos({super.key, required this.avisos});
 
   final List<Map<String, dynamic>> avisos;
@@ -357,52 +539,47 @@ class PaginaDeAvisos extends StatelessWidget {
             ),
           ),
         ],
-       rows: avisos.map((aviso) {
-  final status = aviso['status'] ?? 'Normal'; // Aqui usamos 'status' 
-  final data = aviso['data'] ?? '';
-  final descricao = aviso['descricao'] ?? ''; // Mantemos 'descricao' para descrição
+        rows: avisos.map((aviso) {
+          final status = aviso['status'] ?? 'Normal';
+          final data = aviso['data'] ?? '';
+          final descricao = aviso['descricao'] ?? '';
 
-  return DataRow(
-    cells: [
-      DataCell(
-        Text(
-          HomePage().formatarData(data),
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-        ),
-      ),
-     DataCell(
-  Text(
-    status, // Exibir o status
-    style: TextStyle(
-      fontWeight: FontWeight.bold,
-      color: status == 'URGENTE'
-          ? Colors.red
-          : status == 'SEMANAL'
-              ? Colors.blue
-              : Colors.black,
-      fontSize: 16,
-    ),
-  ),
-),
-      DataCell(
-        GestureDetector(
-          onTap: () {
-            exibirDescricaoCompleta(context, descricao);
-          },
-          child: SizedBox(
-            width: 600,
-            child: Text(
-              descricao,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}).toList(),
-
+          return DataRow(
+            cells: [
+              DataCell(
+                Text(
+                  Utils.formatarData(data), // Alterado para usar a função de utilitário
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                ),
+              ),
+              DataCell(
+                Text(
+                  status,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: status == 'URGENTE' ? Colors.red : status == 'SEMANAL' ? Colors.blue : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              DataCell(
+                GestureDetector(
+                  onTap: () {
+                    exibirDescricaoCompleta(context, descricao);
+                  },
+                  child: SizedBox(
+                    width: 600,
+                    child: Text(
+                      descricao,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
@@ -433,7 +610,33 @@ class PaginaDeAvisos extends StatelessWidget {
   }
 }
 
-class PaginaDePedidos extends StatelessWidget {
+    void exibirDescricaoCompleta(BuildContext context, String descricao) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Descrição Completa'),
+            content: SingleChildScrollView(
+              child: Text(
+                descricao,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Fechar'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  
+
+  class PaginaDePedidos extends StatelessWidget {
   const PaginaDePedidos({super.key, required this.pedidos});
 
   final List<Map<String, dynamic>> pedidos;
@@ -466,7 +669,7 @@ class PaginaDePedidos extends StatelessWidget {
             cells: [
               DataCell(
                 Text(
-                  HomePage().formatarData(data),
+                  Utils.formatarData(data), // Alterado para usar a função de utilitário
                   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
                 ),
               ),
