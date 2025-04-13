@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'louvor_table.dart';
@@ -16,6 +17,7 @@ class _LouvorPageState extends State<LouvorPage> {
   List<Map<String, dynamic>> louvoresFiltrados = [];
   bool carregando = true;
   final TextEditingController _buscaController = TextEditingController();
+  Timer? _timer;
 
   @override
   void initState() {
@@ -24,10 +26,15 @@ class _LouvorPageState extends State<LouvorPage> {
     _buscaController.addListener(() {
       filtrarLouvores(_buscaController.text);
     });
+    // Inicia o timer para consultar a cada 5 segundos
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      carregarLouvores();
+    });
   }
 
   @override
   void dispose() {
+    _timer?.cancel(); // Cancela o timer
     _buscaController.dispose();
     super.dispose();
   }
@@ -41,7 +48,8 @@ class _LouvorPageState extends State<LouvorPage> {
 
       setState(() {
         louvores = List<Map<String, dynamic>>.from(response);
-        louvoresFiltrados = louvores;
+        // Aplica o filtro de busca atual
+        filtrarLouvores(_buscaController.text);
         carregando = false;
       });
     } catch (e) {

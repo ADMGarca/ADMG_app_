@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'avisos_table.dart';
@@ -16,19 +17,24 @@ class _AvisosPageState extends State<AvisosPage> {
   List<Map<String, dynamic>> avisosFiltrados = [];
   bool carregando = true;
   final TextEditingController _buscaController = TextEditingController();
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     carregarAvisos();
-    // Adiciona um listener para atualizar os resultados conforme o usuário digita
     _buscaController.addListener(() {
       filtrarAvisos(_buscaController.text);
+    });
+    // Inicia o timer para consultar a cada 5 segundos
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      carregarAvisos();
     });
   }
 
   @override
   void dispose() {
+    _timer?.cancel(); // Cancela o timer
     _buscaController.dispose();
     super.dispose();
   }
@@ -42,7 +48,16 @@ class _AvisosPageState extends State<AvisosPage> {
 
       setState(() {
         avisos = List<Map<String, dynamic>>.from(response);
-        avisosFiltrados = avisos;
+        // Ordena por status: "URGENTE" no topo
+        avisos.sort((a, b) {
+          final statusA = a['status']?.toString().toLowerCase() ?? 'normal';
+          final statusB = b['status']?.toString().toLowerCase() ?? 'normal';
+          if (statusA == 'urgente' && statusB != 'urgente') return -1;
+          if (statusA != 'urgente' && statusB == 'urgente') return 1;
+          return 0;
+        });
+        // Aplica o filtro de busca atual
+        filtrarAvisos(_buscaController.text);
         carregando = false;
       });
     } catch (e) {

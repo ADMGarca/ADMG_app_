@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:admg_app/screens/home_page.dart';
+import 'package:admg_app/screens/mesario_page.dart'; // Certifique-se de que o caminho está correto
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -13,7 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final supabase = Supabase.instance.client;
-  
+
   String _nome = '';
   String _senha = '';
   bool _lembrarSenha = false;
@@ -39,9 +40,7 @@ class _LoginPageState extends State<LoginPage> {
       if (response != null) {
         setState(() {
           _usuarios = List<Map<String, dynamic>>.from(response);
-          if (_usuarios.isNotEmpty) {
-            _usuarioSelecionado = _usuarios.first['nome'];
-          }
+          // Não definimos _usuarioSelecionado aqui para que venha null por padrão
         });
       }
     } catch (e) {
@@ -92,10 +91,18 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response != null) {
         await _salvarCredenciais();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        final setor = response['setor']?.toString().toLowerCase() ?? '';
+        if (setor == 'mesário') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MesarioPage()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Usuário ou senha incorretos')),
@@ -134,9 +141,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   children: [
                     const Icon(
-                      Icons.church, // Ícone de igreja
+                      Icons.church,
                       size: 80,
-                      color: Color(0xFF42A5F5), // Azul claro
+                      color: Color(0xFF42A5F5),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -175,14 +182,37 @@ class _LoginPageState extends State<LoginPage> {
                         value: _usuarioSelecionado,
                         decoration: const InputDecoration(
                           prefixIcon: Icon(Icons.person_outline, size: 28),
+                          hintText: 'Selecione um usuário', // Texto de placeholder
                         ),
                         style: const TextStyle(fontSize: 18, color: Colors.black87),
                         items: _usuarios.map<DropdownMenuItem<String>>((usuario) {
+                          final nome = usuario['nome']?.toString() ?? '';
+                          final setor = usuario['setor']?.toString().toLowerCase() ?? '';
+                          Color setorColor = Colors.black54; // Cor padrão
+
+                          if (setor == 'dirigente') {
+                            setorColor = Colors.blue; // Dirigente em azul
+                          } else if (setor == 'mesário') {
+                            setorColor = Colors.red; // Mesário em vermelho
+                          }
+
                           return DropdownMenuItem<String>(
-                            value: usuario['nome']?.toString(),
-                            child: Text(
-                              '${usuario['nome']} (${usuario['setor']})',
-                              style: const TextStyle(fontSize: 18),
+                            value: nome,
+                            child: Row(
+                              children: [
+                                Text(
+                                  nome,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '($setor)',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: setorColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -245,7 +275,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
-                        height: 60, // Botão maior
+                        height: 60,
                         child: ElevatedButton(
                           onPressed: _carregando ? null : _login,
                           child: _carregando

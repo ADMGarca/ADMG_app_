@@ -40,9 +40,10 @@ class AvisosTable extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: avisos.map((aviso) {
-          final importancia = aviso['status'] ?? 'Normal';
-          final data = aviso['data'] ?? '';
-          final descricao = aviso['descricao'] ?? '';
+          final importancia = aviso['status']?.toString() ?? 'Normal';
+          final data = aviso['data']?.toString() ?? '';
+          final descricao = aviso['descricao']?.toString() ?? '';
+          final isUrgente = importancia.toLowerCase() == 'urgente';
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
@@ -50,7 +51,13 @@ class AvisosTable extends StatelessWidget {
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+                // Borda vermelha para avisos urgentes
+                side: isUrgente
+                    ? const BorderSide(color: Colors.red, width: 2)
+                    : BorderSide.none,
               ),
+              // Fundo vermelho claro para avisos urgentes
+              color: isUrgente ? const Color(0xFFFFE6E6) : Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -72,7 +79,8 @@ class AvisosTable extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: importancia == 'Urgente' ? Colors.red : Colors.black87,
+                            // Texto vermelho para status "URGENTE"
+                            color: isUrgente ? Colors.red : Colors.black87,
                           ),
                         ),
                       ],
@@ -83,8 +91,8 @@ class AvisosTable extends StatelessWidget {
                       child: Text(
                         descricao,
                         style: const TextStyle(
-                          fontSize: 20, // Fonte maior
-                          fontWeight: FontWeight.bold, // Negrito
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),

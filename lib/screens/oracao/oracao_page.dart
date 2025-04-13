@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'oracao_table.dart';
@@ -16,6 +17,7 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
   List<Map<String, dynamic>> pedidosFiltrados = [];
   bool carregando = true;
   final TextEditingController _buscaController = TextEditingController();
+  Timer? _timer;
 
   @override
   void initState() {
@@ -24,10 +26,15 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
     _buscaController.addListener(() {
       filtrarPedidos(_buscaController.text);
     });
+    // Inicia o timer para consultar a cada 5 segundos
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      carregarPedidos();
+    });
   }
 
   @override
   void dispose() {
+    _timer?.cancel(); // Cancela o timer
     _buscaController.dispose();
     super.dispose();
   }
@@ -42,7 +49,8 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
       if (response != null && response.isNotEmpty) {
         setState(() {
           pedidos = List<Map<String, dynamic>>.from(response);
-          pedidosFiltrados = pedidos;
+          // Aplica o filtro de busca atual
+          filtrarPedidos(_buscaController.text);
           carregando = false;
         });
       } else {
