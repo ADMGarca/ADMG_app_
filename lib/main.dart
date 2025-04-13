@@ -1,410 +1,92 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:intl/intl.dart';
+import 'package:admg_app/screens/home_page.dart';
+import 'package:admg_app/screens/login/login_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Supabase.initialize(
+    url: 'https://kvrllypieftdcoztsxno.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2cmxseXBpZWZ0ZGNvenRzeG5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1NTQ5NDksImV4cCI6MjA2MDEzMDk0OX0.F9rHyAZ4TXRQgQdXxM2BtgRNt03nLvlAcAdkJoxSesg',
+  );
+
+  final prefs = await SharedPreferences.getInstance();
+  final temCredenciais = prefs.containsKey('usuario_nome');
+
+  runApp(MyApp(telaInicial: temCredenciais ? const HomePage() : const LoginPage()));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget telaInicial;
+  
+  const MyApp({super.key, required this.telaInicial});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ADMG App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  String formatarData(String data) {
-    try {
-      final dateTime = DateTime.parse(data);
-      final format = DateFormat('dd/MM/yyyy HH:mm');
-      return format.format(dateTime);
-    } catch (e) {
-      return data;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('ADMG - Início')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 200,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AvisosPage()),
-                  );
-                },
-                child: const Text('Avisos'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 300,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PedidoOracaoPage()),
-                  );
-                },
-                child: const Text('Pedido de Oração'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 144, 119, 240),
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 200,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {
-                  exit(0);
-                },
-                child: const Text('Sair'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.black),
-                ),
-              ),
-            ),
-          ],
+        brightness: Brightness.light, // Tema claro
+        primaryColor: const Color(0xFF42A5F5), // Azul claro (cor primária)
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Fundo claro e suave
+        cardColor: Colors.white, // Cards brancos com sombra
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF42A5F5),
+          secondary: Color(0xFFFFCA28), // Dourado suave para destaques
+          surface: Colors.white,
+          onPrimary: Colors.white,
+          onSecondary: Colors.black,
+          onSurface: Colors.black87,
+        ),
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+          headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+          bodyLarge: TextStyle(fontSize: 18, color: Colors.black87), // Texto maior para legibilidade
+          bodyMedium: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 2,
+          titleTextStyle: TextStyle(
+            color: Colors.black87,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF42A5F5), // Azul claro
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF42A5F5),
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: Color(0xFFF5F5F5),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: Colors.black26),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide(color: Color(0xFF42A5F5), width: 2),
+          ),
+          labelStyle: TextStyle(color: Colors.black54, fontSize: 18),
+          prefixIconColor: Colors.black54,
         ),
       ),
-    );
-  }
-}
-
-class AvisosPage extends StatefulWidget {
-  const AvisosPage({super.key});
-
-  @override
-  _AvisosPageState createState() => _AvisosPageState();
-}
-
-class _AvisosPageState extends State<AvisosPage> {
-  List<Map<String, dynamic>> avisos = [];
-  List<Map<String, dynamic>> avisosFiltrados = [];
-  bool carregando = true;
-  String busca = '';
-
-  @override
-  void initState() {
-    super.initState();
-    carregarAvisos();
-  }
-
-  Future<void> carregarAvisos() async {
-    try {
-      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/avisos'));
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
-        setState(() {
-          avisos = result;
-          avisosFiltrados = result;
-          carregando = false;
-        });
-      } else {
-        throw Exception('Falha ao carregar avisos');
-      }
-    } catch (e) {
-      print('Erro ao carregar avisos: $e');
-      setState(() {
-        carregando = false;
-      });
-    }
-  }
-
-  void filtrarAvisos(String textoBusca) {
-    setState(() {
-      busca = textoBusca;
-      avisosFiltrados = avisos
-          .where((aviso) => aviso['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
-          .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Avisos')),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar Avisos',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarAvisos,
-                  ),
-                ),
-                Expanded(
-                  child: avisosFiltrados.isEmpty
-                      ? const Center(child: Text('Nenhum aviso encontrado'))
-                      : SingleChildScrollView(
-                          child: PaginaDeAvisos(avisos: avisosFiltrados),
-                        ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            carregando = true;
-          });
-          carregarAvisos();
-        },
-        child: const Icon(Icons.refresh),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-}
-
-class PaginaDeAvisos extends StatelessWidget {
-  const PaginaDeAvisos({super.key, required this.avisos});
-
-  final List<Map<String, dynamic>> avisos;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: DataTable(
-        columnSpacing: 20, // Adicionado para expandir as colunas
-        columns: const [
-          DataColumn(
-            label: Text(
-              'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Importância',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
-            ),
-          ),
-        ],
-        rows: avisos.map((aviso) {
-          final importancia = aviso['status'] ?? 'Normal';
-          final data = aviso['data'] ?? '';
-          final descricao = aviso['descricao'] ?? '';
-
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(
-                  HomePage().formatarData(data),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                ),
-              ),
-              DataCell(
-                Text(
-                  importancia,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: importancia == 'Urgente' ? Colors.red : Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              DataCell(
-                SizedBox(
-                  width: 600, // Adicionado largura maior para "Descrição"
-                  child: SelectableText(
-                    descricao,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class PedidoOracaoPage extends StatefulWidget {
-  const PedidoOracaoPage({super.key});
-
-  @override
-  _PedidoOracaoPageState createState() => _PedidoOracaoPageState();
-}
-
-class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
-  List<Map<String, dynamic>> pedidos = [];
-  List<Map<String, dynamic>> pedidosFiltrados = [];
-  bool carregando = true;
-  String busca = '';
-
-  @override
-  void initState() {
-    super.initState();
-    carregarPedidos();
-  }
-
-  Future<void> carregarPedidos() async {
-    try {
-      final response = await http.get(Uri.parse('http://192.168.15.22:5001/api/pedidos'));
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> result = List<Map<String, dynamic>>.from(json.decode(response.body));
-        setState(() {
-          pedidos = result;
-          pedidosFiltrados = result;
-          carregando = false;
-        });
-      } else {
-        throw Exception('Falha ao carregar pedidos de oração');
-      }
-    } catch (e) {
-      print('Erro ao carregar pedidos de oração: $e');
-      setState(() {
-        carregando = false;
-      });
-    }
-  }
-
-  void filtrarPedidos(String textoBusca) {
-    setState(() {
-      busca = textoBusca;
-      pedidosFiltrados = pedidos
-          .where((pedido) => pedido['descricao'].toLowerCase().contains(textoBusca.toLowerCase()))
-          .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pedido de Oração')),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar Pedidos',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: filtrarPedidos,
-                  ),
-                ),
-                Expanded(
-                  child: pedidosFiltrados.isEmpty
-                      ? const Center(child: Text('Nenhum pedido encontrado'))
-                      : SingleChildScrollView(
-                          child: PaginaDePedidos(pedidos: pedidosFiltrados),
-                        ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            carregando = true;
-          });
-          carregarPedidos();
-        },
-        child: const Icon(Icons.refresh),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-}
-
-class PaginaDePedidos extends StatelessWidget {
-  const PaginaDePedidos({super.key, required this.pedidos});
-
-  final List<Map<String, dynamic>> pedidos;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: DataTable(
-        columnSpacing: 20, // Adicionado para expandir as colunas
-        columns: const [
-          DataColumn(
-            label: Text(
-              'Data',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey,fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Descrição',
-              style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
-            ),
-          ),
-        ],
-        rows: pedidos.map((pedido) {
-          final data = pedido['data'] ?? '';
-          final descricao = pedido['descricao'] ?? '';
-
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(
-                  HomePage().formatarData(data),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
-                ),
-              ),
-              DataCell(
-                SizedBox(
-                  width: 600, // Adicionado largura maior para "Descrição"
-                  child: SelectableText(
-                    descricao,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
+      home: telaInicial,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
