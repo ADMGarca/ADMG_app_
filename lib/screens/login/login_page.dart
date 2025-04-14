@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:admg_app/screens/home_page.dart';
-import 'package:admg_app/screens/mesario_page.dart'; // Certifique-se de que o caminho está correto
+import 'package:admg_app/screens/mesario_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -23,11 +23,19 @@ class _LoginPageState extends State<LoginPage> {
   String? _usuarioSelecionado;
   bool _obscurePassword = true;
 
+  final TextEditingController _senhaController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _carregarUsuarios();
     _carregarCredenciaisSalvas();
+  }
+
+  @override
+  void dispose() {
+    _senhaController.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarUsuarios() async {
@@ -40,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
       if (response != null) {
         setState(() {
           _usuarios = List<Map<String, dynamic>>.from(response);
-          // Não definimos _usuarioSelecionado aqui para que venha null por padrão
         });
       }
     } catch (e) {
@@ -55,12 +62,26 @@ class _LoginPageState extends State<LoginPage> {
     final nomeSalvo = prefs.getString('usuario_nome');
     final senhaSalva = prefs.getString('usuario_senha');
 
+    print('Carregando credenciais salvas: nome=$nomeSalvo, senha=$senhaSalva');
+
     if (nomeSalvo != null && senhaSalva != null) {
       setState(() {
         _nome = nomeSalvo;
         _senha = senhaSalva;
+        _senhaController.text = senhaSalva;
         _lembrarSenha = true;
         _usuarioSelecionado = nomeSalvo;
+
+        // Verifica se o nome salvo existe na lista de usuários
+        final usuarioExistente = _usuarios.any((usuario) => usuario['nome'] == nomeSalvo);
+        if (!usuarioExistente) {
+          _usuarioSelecionado = null; // Reseta se o usuário não existir mais
+          _nome = '';
+          _senhaController.text = '';
+          _lembrarSenha = false;
+          prefs.remove('usuario_nome');
+          prefs.remove('usuario_senha');
+        }
       });
     }
   }
@@ -68,9 +89,11 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _salvarCredenciais() async {
     final prefs = await SharedPreferences.getInstance();
     if (_lembrarSenha) {
+      print('Salvando credenciais: nome=$_nome, senha=$_senha');
       await prefs.setString('usuario_nome', _nome);
       await prefs.setString('usuario_senha', _senha);
     } else {
+      print('Removendo credenciais salvas');
       await prefs.remove('usuario_nome');
       await prefs.remove('usuario_senha');
     }
@@ -79,7 +102,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _carregando = true);
+    setState(() {
+      _senha = _senhaController.text;
+      _carregando = true;
+    });
 
     try {
       final response = await supabase
@@ -124,7 +150,6 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Cabeçalho com ícone e título
               Container(
                 padding: const EdgeInsets.all(24.0),
                 width: double.infinity,
@@ -165,7 +190,6 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              // Formulário
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Form(
@@ -182,18 +206,18 @@ class _LoginPageState extends State<LoginPage> {
                         value: _usuarioSelecionado,
                         decoration: const InputDecoration(
                           prefixIcon: Icon(Icons.person_outline, size: 28),
-                          hintText: 'Selecione um usuário', // Texto de placeholder
+                          hintText: 'Selecione um usuário',
                         ),
                         style: const TextStyle(fontSize: 18, color: Colors.black87),
                         items: _usuarios.map<DropdownMenuItem<String>>((usuario) {
                           final nome = usuario['nome']?.toString() ?? '';
                           final setor = usuario['setor']?.toString().toLowerCase() ?? '';
-                          Color setorColor = Colors.black54; // Cor padrão
+                          Color setorColor = Colors.black54;
 
                           if (setor == 'dirigente') {
-                            setorColor = Colors.blue; // Dirigente em azul
+                            setorColor = Colors.blue;
                           } else if (setor == 'mesário') {
-                            setorColor = Colors.red; // Mesário em vermelho
+                            setorColor = Colors.red;
                           }
 
                           return DropdownMenuItem<String>(
@@ -232,6 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
+                        controller: _senhaController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.lock_outline, size: 28),
@@ -252,7 +277,6 @@ class _LoginPageState extends State<LoginPage> {
                         style: const TextStyle(fontSize: 18),
                         validator: (value) =>
                             value!.isEmpty ? 'Digite sua senha' : null,
-                        onChanged: (value) => _senha = value,
                       ),
                       const SizedBox(height: 16),
                       Row(

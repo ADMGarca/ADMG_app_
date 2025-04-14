@@ -26,8 +26,8 @@ class _MesarioPageState extends State<MesarioPage> {
     super.initState();
     _carregarUltimoIdVisto();
     _verificarMensagensNovas();
-    // Verifica mensagens novas a cada 5 minutos
-    _timer = Timer.periodic(const Duration(minutes: 5), (timer) {
+    // Verifica mensagens novas a cada 10 segundos
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _verificarMensagensNovas();
     });
   }
@@ -69,7 +69,7 @@ class _MesarioPageState extends State<MesarioPage> {
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 4),
+              duration: const Duration(seconds: 8), // Dura 8 segundos para não sobrepor
               action: SnackBarAction(
                 label: 'Ver',
                 textColor: Colors.white,
@@ -77,7 +77,11 @@ class _MesarioPageState extends State<MesarioPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const GerenciarMensagensPage()),
-                  );
+                  ).then((_) {
+                    // Após voltar da página de mensagens, atualiza o status
+                    _carregarUltimoIdVisto();
+                    _verificarMensagensNovas();
+                  });
                 },
               ),
             ),
@@ -236,4 +240,4 @@ class _MesarioPageState extends State<MesarioPage> {
       ),
     );
   }
-}  
+}
