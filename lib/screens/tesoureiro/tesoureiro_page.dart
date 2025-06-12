@@ -451,18 +451,18 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
     final pdf = pw.Document();
     final font =
         pw.Font.ttf(await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'));
-    final mesAno = DateFormat('MMMM/yyyy', 'pt_BR').format(_mesFiltro);
+    final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
     final dataHoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
     final List<pw.Widget> linhas = [];
 
     linhas.add(
-      pw.Text('Extrato Financeiro - \$mesAno',
+      pw.Text('Extrato Financeiro - $mesAno',
           style: pw.TextStyle(
               fontSize: 20, fontWeight: pw.FontWeight.bold, font: font)),
     );
     linhas.add(pw.SizedBox(height: 8));
-    linhas.add(pw.Text('Data de emissão: \$dataHoje',
-        style: pw.TextStyle(font: font)));
+    linhas.add(
+        pw.Text('Data de emissão: $dataHoje', style: pw.TextStyle(font: font)));
     linhas.add(pw.SizedBox(height: 16));
 
     // Ordenar: entradas primeiro, depois saídas
@@ -576,9 +576,10 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-    );
+    await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename:
+            'extrato_financeiro_${DateFormat('MM_yyyy').format(_mesFiltro)}.pdf');
   }
 
   Future<void> _carregarSetoresDisponiveis() async {

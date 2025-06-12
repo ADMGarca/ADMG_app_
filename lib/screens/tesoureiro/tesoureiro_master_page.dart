@@ -372,7 +372,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
     final font = await PdfGoogleFonts.notoSansRegular();
 
     final pdf = pw.Document();
-    final mesAno = DateFormat('MMMM/yyyy', 'pt_BR').format(_mesFiltro);
+    final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
     final dataHoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
     pdf.addPage(
@@ -386,7 +386,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
           return [
             pw.Center(
               child: pw.Text(
-                'Extrato Mensal de Transações - \$mesAno',
+                'Extrato Mensal de Transações - $mesAno',
                 style: pw.TextStyle(
                     fontSize: 24, fontWeight: pw.FontWeight.bold, font: font),
               ),
