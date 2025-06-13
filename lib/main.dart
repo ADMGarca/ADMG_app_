@@ -4,6 +4,7 @@ import 'package:admg_app/screens/login/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:admg_app/screens/institutional_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,8 @@ void main() async {
   final temCredenciais = prefs.containsKey('usuario_nome');
 
   runApp(MyApp(
-      telaInicial: temCredenciais ? const HomePage() : const LoginPage()));
+      telaInicial:
+          temCredenciais ? const HomePage() : const InstitutionalPage()));
 }
 
 class MyApp extends StatelessWidget {

@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:admg_app/screens/setor_selection_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final String? userType;
+  const LoginPage({super.key, this.userType});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -53,10 +54,15 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _carregarUsuarios() async {
     print('DEBUG - _carregarUsuarios: Iniciando carregamento de usuários...');
     try {
-      final response = await supabase
-          .from('usuario')
-          .select('id, nome, setor')
-          .order('nome');
+      var query = supabase.from('usuario').select('id, nome, setor, cargo');
+
+      if (widget.userType == 'tesoraria') {
+        query = query.eq('cargo', 'tesoureiro');
+      } else if (widget.userType == 'mesario_dirigente') {
+        query = query.or('cargo.eq.mesario,cargo.eq.dirigente');
+      }
+
+      final response = await query.order('nome');
 
       if (response != null) {
         final uniqueUsers = <String, Map<String, dynamic>>{};
