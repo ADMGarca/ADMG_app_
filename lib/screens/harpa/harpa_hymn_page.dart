@@ -51,7 +51,10 @@ class HarpaHymnPage extends StatelessWidget {
                     Text(
                       hymn['coro'].replaceAll(
                           '<br>', '\n'), // Substitui <br> por nova linha
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -76,7 +79,10 @@ class HarpaHymnPage extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: Text(
                             '$verseNum. $verseText',
-                            style: Theme.of(context).textTheme.bodyLarge,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         );
                       }).toList(),

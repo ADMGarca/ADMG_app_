@@ -51,7 +51,10 @@ class BibleBookPage extends StatelessWidget {
                         horizontal: 16.0, vertical: 4.0),
                     child: Text(
                       '$verseNum. $verseText',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   );
                 }).toList(),
