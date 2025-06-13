@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:admg_app/screens/login/login_page.dart'; // Importe a página de login
+import 'package:admg_app/screens/bible/bible_page.dart'; // Importe a página da Bíblia
+import 'package:admg_app/screens/harpa/harpa_page.dart'; // Importe a página da Harpa
 
 class InstitutionalPage extends StatelessWidget {
   const InstitutionalPage({super.key});
@@ -121,6 +123,82 @@ class InstitutionalPage extends StatelessWidget {
                       child: const Text('Mesário/Dirigente',
                           style: TextStyle(
                               fontSize: 20)), // Aumentar o tamanho da fonte
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Botão Bíblia
+                Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.4),
+                        spreadRadius: 2,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const BiblePage(), // Navega para a BiblePage
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 18, horizontal: 24),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child:
+                          const Text('Bíblia', style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Botão Harpa
+                Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.4),
+                        spreadRadius: 2,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const HarpaPage(), // Navega para a HarpaPage
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 18, horizontal: 24),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child:
+                          const Text('Harpa', style: TextStyle(fontSize: 20)),
                     ),
                   ),
                 ),
