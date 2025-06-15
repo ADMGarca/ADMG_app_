@@ -12,264 +12,295 @@ class InstitutionalPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ADMG'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFE0F7FA), // Light Cyan
-              Color(0xFFBBDEFB), // Light Blue
+              Color(0xFFE3F2FD), // Azul muito claro
+              Color(0xFFBBDEFB), // Azul claro
             ],
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32.0), // Aumentar padding
+            padding: const EdgeInsets.all(32.0),
             child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // Centraliza verticalmente
-              crossAxisAlignment: CrossAxisAlignment
-                  .stretch, // Estica os filhos horizontalmente
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                // Logo
-                Image.asset(
-                  'assets/assets/img/Logo.png', // Caminho da sua logo
-                  height: 500, // Ajuste o tamanho conforme necessário
-                ),
-                const SizedBox(height: 48),
-
-                // Botão Tesoraria
-                Container(
-                  // Adicionado Container para sombra
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset:
-                            const Offset(0, 4), // Altera a posição da sombra
-                      ),
-                    ],
-                    borderRadius:
-                        BorderRadius.circular(16), // Borda mais arredondada
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginPage(userType: 'tesoraria'),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 24), // Aumentar o preenchimento
-                        shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(16)), // Borda arredondada
-                      ),
-                      child: const Text('Tesoraria',
-                          style: TextStyle(
-                              fontSize: 20)), // Aumentar o tamanho da fonte
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Botão Mesário/Dirigente
-                Container(
-                  // Adicionado Container para sombra
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset:
-                            const Offset(0, 4), // Altera a posição da sombra
-                      ),
-                    ],
-                    borderRadius:
-                        BorderRadius.circular(16), // Borda mais arredondada
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginPage(userType: 'mesario_dirigente'),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 24), // Aumentar o preenchimento
-                        shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(16)), // Borda arredondada
-                      ),
-                      child: const Text('Mesário/Dirigente',
-                          style: TextStyle(
-                              fontSize: 20)), // Aumentar o tamanho da fonte
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Botão Bíblia
+                // Logo com efeito de brilho
                 Container(
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: Colors.blue.withOpacity(0.5),
+                        blurRadius: 20,
+                        spreadRadius: 5,
                       ),
                     ],
-                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const BiblePage(), // Navega para a BiblePage
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 18, horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child:
-                          const Text('Bíblia', style: TextStyle(fontSize: 20)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Botão Harpa
-                Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.4),
-                        spreadRadius: 2,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const HarpaPage(), // Navega para a HarpaPage
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 18, horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child:
-                          const Text('Harpa', style: TextStyle(fontSize: 20)),
-                    ),
+                  child: Image.asset(
+                    'assets/assets/img/logo/Logo.png',
+                    height: 400,
                   ),
                 ),
                 const SizedBox(height: 48),
 
-                // Horários dos Cultos (Exemplo)
-                Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                  elevation: 10, // Aumentar a elevação
-                  shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(16)), // Borda mais arredondada
-                  shadowColor:
-                      Colors.blue.withOpacity(0.5), // Cor da sombra do card
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                        24.0), // Aumentar o padding interno do card
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Horários dos Cultos',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight:
-                                      FontWeight.bold), // Destacar título
+                // Botões principais (Bíblia e Harpa)
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFuturisticButton(
+                        context,
+                        'Bíblia',
+                        Icons.book,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const BiblePage()),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Terça-feira: Oração 19:30',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(color: Colors.black87),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Quinta-feira: Culto 19:30',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(color: Colors.black87),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Sábado: Culto Banco da Terra 19:00',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(color: Colors.black87),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Domingo: Culto 19:00',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(color: Colors.black87),
-                        ),
-                        // Adicione mais horários conforme necessário
-                      ],
+                      ),
                     ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildFuturisticButton(
+                        context,
+                        'Harpa',
+                        Icons.music_note,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HarpaPage()),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Menu de acesso restrito
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white
+                        .withOpacity(0.9), // Card branco translúcido
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.5),
+                      width: 2,
+                    ),
+                  ),
+                  child: ExpansionTile(
+                    title: Text(
+                      'Acesso Restrito',
+                      style: TextStyle(
+                        color: Colors.blue.shade900, // Texto escuro
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    leading: Icon(Icons.admin_panel_settings,
+                        color: Colors.blue.shade900), // Ícone escuro
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            _buildRestrictedButton(
+                              context,
+                              'Tesoraria',
+                              Icons.account_balance,
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const LoginPage(userType: 'tesoraria'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildRestrictedButton(
+                              context,
+                              'Mesário/Dirigente',
+                              Icons.people,
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(
+                                      userType: 'mesario_dirigente'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Horários dos Cultos
+                _buildFuturisticCard(
+                  context,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Horários dos Cultos',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900, // Texto escuro
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildScheduleItem('Terça-feira: Oração 19:30'),
+                      _buildScheduleItem('Quinta-feira: Culto 19:30'),
+                      _buildScheduleItem('Sábado: Culto Banco da Terra 19:00'),
+                      _buildScheduleItem('Domingo: Culto 19:00'),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFuturisticButton(
+    BuildContext context,
+    String text,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade700, Colors.blue.shade900],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.6),
+            blurRadius: 25,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 50, color: Colors.white),
+                const SizedBox(height: 8),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRestrictedButton(
+    BuildContext context,
+    String text,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.grey.shade800, Colors.grey.shade900],
+        ),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(15),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white),
+                const SizedBox(width: 16),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFuturisticCard(BuildContext context, Widget child) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9), // Card branco translúcido
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.blue.withOpacity(0.5),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildScheduleItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(Icons.access_time,
+              color: Colors.blue.shade900, size: 20), // Ícone escuro
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.black87, // Texto cinza escuro
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }

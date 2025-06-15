@@ -28,6 +28,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/fonts/NotoSans-Regular.ttf
-    - assets/assets/img/Logo.png
+    - assets/assets/img/logo/Logo.png
     - assets/assets/biblia/
     - assets/assets/harpa/
