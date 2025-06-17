@@ -51,10 +51,8 @@ class HarpaHymnPage extends StatelessWidget {
                     Text(
                       hymn['coro'].replaceAll(
                           '<br>', '\n'), // Substitui <br> por nova linha
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold, color: Colors.red),
                     ),
                     const SizedBox(height: 16),
                   ],

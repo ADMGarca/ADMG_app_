@@ -57,6 +57,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
   bool _isMaster = false;
   List<String> _setoresDisponiveis = [];
   String? _setorFiltroSelecionado;
+  String? _setorTransacaoEditando;
 
   @override
   void initState() {
@@ -158,6 +159,16 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
   Future<void> _adicionarTransacao() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_setorFiltroSelecionado == 'Todos os Setores') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Não é possível adicionar ou editar transações em "Todos os Setores". Por favor, selecione um setor específico.'),
+        ),
+      );
+      return;
+    }
+
     if (_idUsuario.isEmpty || int.tryParse(_idUsuario) == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -176,22 +187,36 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
           .replaceAll(',', '.');
       final double valor = double.parse(valorText);
 
-      final setor = _setorFiltroSelecionado?.toLowerCase();
+      final setor = _editando
+          ? _setorTransacaoEditando
+          : _setorFiltroSelecionado?.toLowerCase();
       final idUsuario = int.parse(_idUsuario);
       final dataFormatada = DateFormat('yyyy-MM-dd').format(_dataSelecionada);
 
       if (_editando) {
-        await supabase.from('transacoes').update({
-          'data': dataFormatada,
-          'tipo': _tipoTransacao,
-          'descricao': _descricaoController.text,
-          'valor': valor,
-          'setor': setor,
-          'usuario_id': idUsuario,
-        }).eq('id', _idTransacaoEditando);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transação atualizada com sucesso!')),
-        );
+        try {
+          print('Tentando atualizar transação com ID: $_idTransacaoEditando');
+          print(
+              'Dados para atualização: {"data": $dataFormatada, "tipo": $_tipoTransacao, "descricao": ${_descricaoController.text}, "valor": $valor, "setor": $setor, "usuario_id": $idUsuario}');
+
+          await supabase.from('transacoes').update({
+            'data': dataFormatada,
+            'tipo': _tipoTransacao,
+            'descricao': _descricaoController.text,
+            'valor': valor,
+            'setor': setor,
+            'usuario_id': idUsuario,
+          }).eq('id', _idTransacaoEditando);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Transação atualizada com sucesso!')),
+          );
+          print('Transação atualizada com sucesso no Supabase!');
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao atualizar transação: $e')),
+          );
+          print('Erro ao atualizar transação: $e');
+        }
       } else {
         await supabase.from('transacoes').insert({
           'data': dataFormatada,
@@ -238,6 +263,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
       _valorController.updateValue(transacao['valor'].toDouble());
       _dataSelecionada = DateTime.parse(transacao['data']);
       _tipoTransacao = transacao['tipo'];
+      _setorTransacaoEditando = transacao['setor'];
     });
   }
 
@@ -272,93 +298,29 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
 
   void _trocarMesFiltro(int meses) {
     setState(() {
-      _mesFiltro = DateTime(_mesFiltro.year, _mesFiltro.month + meses, 1);
+      int newMonth = _mesFiltro.month + meses;
+      int newYear = _mesFiltro.year;
+
+      // Ajusta o ano e o mês se o novo mês estiver fora do intervalo (1-12)
+      while (newMonth > 12) {
+        newMonth -= 12;
+        newYear++;
+      }
+      while (newMonth < 1) {
+        newMonth += 12;
+        newYear--;
+      }
+      _mesFiltro = DateTime(newYear, newMonth,
+          1); // Sempre define para o primeiro dia para evitar problemas de dias inválidos
     });
     _filtrarTransacoesPorMes();
   }
 
   Future<void> _exportarExtratoPDF() async {
-    int testemunhas = 2;
-    List<String> nomesTestemunhas = List.filled(testemunhas, '');
-    final formKey = GlobalKey<FormState>();
-
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Testemunhas para o Extrato'),
-          content: Form(
-            key: formKey,
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('Quantidade:'),
-                        const SizedBox(width: 8),
-                        DropdownButton<int>(
-                          value: testemunhas,
-                          items: [2, 3, 4]
-                              .map((qtd) => DropdownMenuItem(
-                                    value: qtd,
-                                    child: Text(qtd.toString()),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                testemunhas = value;
-                                if (nomesTestemunhas.length < testemunhas) {
-                                  nomesTestemunhas.addAll(List.filled(
-                                      testemunhas - nomesTestemunhas.length,
-                                      ''));
-                                } else if (nomesTestemunhas.length >
-                                    testemunhas) {
-                                  nomesTestemunhas =
-                                      nomesTestemunhas.sublist(0, testemunhas);
-                                }
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    ...List.generate(
-                        testemunhas,
-                        (i) => Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: TextFormField(
-                                initialValue: nomesTestemunhas[i],
-                                decoration: InputDecoration(
-                                    labelText: 'Nome da Testemunha ${i + 1}'),
-                                validator: (v) => v == null || v.isEmpty
-                                    ? 'Informe o nome'
-                                    : null,
-                                onChanged: (v) => nomesTestemunhas[i] = v,
-                              ),
-                            )),
-                  ],
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  Navigator.pop(context, nomesTestemunhas);
-                }
-              },
-              child: const Text('Gerar PDF'),
-            ),
-          ],
-        );
+        return _TestemunhasDialog();
       },
     ).then((result) async {
       if (result != null && result is List<String>) {
@@ -471,18 +433,17 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  pw.SizedBox(height: 30), // Espaço antes das assinaturas
+                  pw.SizedBox(height: 30),
                   ...testemunhas.map((nome) => pw.Column(
                         children: [
-                          pw.SizedBox(
-                              height: 10), // Espaço entre as assinaturas
+                          pw.SizedBox(height: 10),
                           pw.Container(
                               width: 200, height: 1, color: PdfColors.black),
                           pw.Text(nome, style: pw.TextStyle(font: font)),
-                          pw.SizedBox(height: 20), // Espaço após cada nome
+                          pw.SizedBox(height: 20),
                         ],
                       )),
-                  pw.SizedBox(height: 30), // Espaço antes do local/data
+                  pw.SizedBox(height: 30),
                   pw.Text(
                       '\n\n${_setorFiltroSelecionado ?? ''}, ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
                       style: pw.TextStyle(font: font)),
@@ -659,7 +620,12 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                    onPressed: _adicionarTransacao,
+                                    onPressed: _editando
+                                        ? _adicionarTransacao
+                                        : (_setorFiltroSelecionado ==
+                                                'Todos os Setores'
+                                            ? null
+                                            : _adicionarTransacao),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.blueAccent,
                                       foregroundColor: Colors.white,
@@ -829,8 +795,11 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.edit),
-                                          onPressed: () =>
-                                              _editarTransacao(transacao),
+                                          onPressed: _setorFiltroSelecionado ==
+                                                  'Todos os Setores'
+                                              ? null
+                                              : () =>
+                                                  _editarTransacao(transacao),
                                           visualDensity: VisualDensity.compact,
                                           padding: EdgeInsets.zero,
                                           constraints: BoxConstraints(),
@@ -976,7 +945,12 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
-                              onPressed: _adicionarTransacao,
+                              onPressed: _editando
+                                  ? _adicionarTransacao
+                                  : (_setorFiltroSelecionado ==
+                                          'Todos os Setores'
+                                      ? null
+                                      : _adicionarTransacao),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blueAccent,
                                 foregroundColor: Colors.white,
@@ -1134,8 +1108,11 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.edit),
-                                          onPressed: () =>
-                                              _editarTransacao(transacao),
+                                          onPressed: _setorFiltroSelecionado ==
+                                                  'Todos os Setores'
+                                              ? null
+                                              : () =>
+                                                  _editarTransacao(transacao),
                                           visualDensity: VisualDensity.compact,
                                           padding: EdgeInsets.zero,
                                           constraints: BoxConstraints(),
@@ -1162,6 +1139,121 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
           }
         },
       ),
+    );
+  }
+}
+
+// Novo StatefulWidget para gerenciar o diálogo de Testemunhas
+class _TestemunhasDialog extends StatefulWidget {
+  const _TestemunhasDialog({super.key});
+
+  @override
+  State<_TestemunhasDialog> createState() => _TestemunhasDialogState();
+}
+
+class _TestemunhasDialogState extends State<_TestemunhasDialog> {
+  int _testemunhas = 2; // Estado interno do diálogo
+  final List<TextEditingController> _nomeControllers = [];
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _inicializarControladores();
+  }
+
+  void _inicializarControladores() {
+    // Garante que haja controladores suficientes
+    while (_nomeControllers.length < _testemunhas) {
+      _nomeControllers.add(TextEditingController());
+    }
+    // Descarta controladores extras se a quantidade diminuir
+    while (_nomeControllers.length > _testemunhas) {
+      _nomeControllers.removeLast().dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    // Descarta todos os controladores quando o widget é descartado
+    for (var controller in _nomeControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Testemunhas para o Extrato'),
+      content: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Text('Quantidade:'),
+                    const SizedBox(width: 8),
+                    DropdownButton<int>(
+                      value: _testemunhas,
+                      items: [2, 3, 4]
+                          .map((qtd) => DropdownMenuItem(
+                                value: qtd,
+                                child: Text(qtd.toString()),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _testemunhas = value;
+                            _inicializarControladores(); // Re-inicializa controladores ao mudar a quantidade
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                ...List.generate(
+                    _testemunhas,
+                    (i) => Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: TextFormField(
+                            key: ValueKey(
+                                i), // Ajuda o Flutter a manter o estado dos campos dinâmicos
+                            controller: _nomeControllers[i],
+                            decoration: InputDecoration(
+                                labelText: 'Nome da Testemunha ${i + 1}'),
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Informe o nome'
+                                : null,
+                          ),
+                        )),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              List<String> nomesTestemunhasResult =
+                  _nomeControllers.map((c) => c.text).toList();
+              Navigator.pop(context, nomesTestemunhasResult);
+            }
+          },
+          child: const Text('Gerar PDF'),
+        ),
+      ],
     );
   }
 }
