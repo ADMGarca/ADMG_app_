@@ -11,6 +11,59 @@ class GerenciarOracaoPage extends StatefulWidget {
 }
 
 class _GerenciarOracaoPageState extends State<GerenciarOracaoPage> {
+  void _mostrarDialogoEditarPedido(Map<String, dynamic> pedido) {
+    final TextEditingController descricaoController = TextEditingController(text: pedido['descricao'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text('Editar Pedido de Oração'),
+        content: TextField(
+          controller: descricaoController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: 'Descrição',
+            border: OutlineInputBorder(),
+          ),
+          style: const TextStyle(fontSize: 18),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final descricao = descricaoController.text.trim();
+              if (descricao.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('A descrição não pode estar vazia')),
+                );
+                return;
+              }
+
+              try {
+                await supabase.from('pedidodeoracao').update({
+                  'descricao': descricao,
+                }).eq('id', pedido['id']);
+                Navigator.pop(context);
+                carregarPedidos();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Pedido editado com sucesso!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao editar pedido: $e')),
+                );
+              }
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> pedidos = [];
   bool carregando = true;
@@ -177,6 +230,10 @@ class _GerenciarOracaoPageState extends State<GerenciarOracaoPage> {
                                     ),
                                   ],
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _mostrarDialogoEditarPedido(pedido),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),

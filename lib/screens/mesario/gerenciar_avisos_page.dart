@@ -11,6 +11,83 @@ class GerenciarAvisosPage extends StatefulWidget {
 }
 
 class _GerenciarAvisosPageState extends State<GerenciarAvisosPage> {
+  void _mostrarDialogoEditarAviso(Map<String, dynamic> aviso) {
+    final TextEditingController descricaoController = TextEditingController(text: aviso['descricao'] ?? '');
+    String statusSelecionado = aviso['status']?.toString().toUpperCase() ?? 'NORMAL';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text('Editar Aviso'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: descricaoController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Descrição',
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: statusSelecionado,
+              decoration: const InputDecoration(
+                labelText: 'Status',
+                border: OutlineInputBorder(),
+              ),
+              items: ['URGENTE', 'NORMAL'].map((status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(status),
+                );
+              }).toList(),
+              onChanged: (value) {
+                statusSelecionado = value ?? 'NORMAL';
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final descricao = descricaoController.text.trim();
+              if (descricao.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('A descrição não pode estar vazia')),
+                );
+                return;
+              }
+
+              try {
+                await supabase.from('aviso').update({
+                  'descricao': descricao,
+                  'status': statusSelecionado,
+                }).eq('id', aviso['id']);
+                Navigator.pop(context);
+                carregarAvisos();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Aviso editado com sucesso!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao editar aviso: $e')),
+                );
+              }
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> avisos = [];
   bool carregando = true;
@@ -228,6 +305,10 @@ class _GerenciarAvisosPageState extends State<GerenciarAvisosPage> {
                                     ),
                                   ],
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _mostrarDialogoEditarAviso(aviso),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),

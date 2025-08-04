@@ -11,6 +11,59 @@ class GerenciarLouvorPage extends StatefulWidget {
 }
 
 class _GerenciarLouvorPageState extends State<GerenciarLouvorPage> {
+  void _mostrarDialogoEditarLouvor(Map<String, dynamic> louvor) {
+    final TextEditingController louvorController = TextEditingController(text: louvor['louvor_'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text('Editar Louvor'),
+        content: TextField(
+          controller: louvorController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: 'Texto do Louvor',
+            border: OutlineInputBorder(),
+          ),
+          style: const TextStyle(fontSize: 18),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final textoLouvor = louvorController.text.trim();
+              if (textoLouvor.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('O texto do louvor não pode estar vazio')),
+                );
+                return;
+              }
+
+              try {
+                await supabase.from('louvor').update({
+                  'louvor_': textoLouvor,
+                }).eq('id', louvor['id']);
+                Navigator.pop(context);
+                carregarLouvores();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Louvor editado com sucesso!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao editar louvor: $e')),
+                );
+              }
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> louvores = [];
   bool carregando = true;
@@ -177,6 +230,10 @@ class _GerenciarLouvorPageState extends State<GerenciarLouvorPage> {
                                     ),
                                   ],
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _mostrarDialogoEditarLouvor(louvor),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),
