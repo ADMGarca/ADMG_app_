@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'avisos_table.dart';
 import '../../utils/date_formatter.dart';
 
-class AvisosPage extends StatefulWidget {
+class AvisosPage extends StatefulWidget {  
   const AvisosPage({super.key});
 
   @override
