@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:admg_app/screens/login/login_page.dart'; // Importe a página de login
 import 'package:admg_app/screens/bible/bible_page.dart'; // Importe a página da Bíblia
 import 'package:admg_app/screens/harpa/harpa_page.dart'; // Importe a página da Harpa
+import 'package:admg_app/screens/bible/biblia_compartilhada_page.dart';
 
 class InstitutionalPage extends StatelessWidget {
   const InstitutionalPage({super.key});
@@ -51,7 +52,7 @@ class InstitutionalPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
 
-                // Botões principais (Bíblia e Harpa)
+                // Botões principais (Bíblia, Bíblia Compartilhada e Harpa)
                 Row(
                   children: [
                     Expanded(
@@ -63,6 +64,19 @@ class InstitutionalPage extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => const BiblePage()),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildFuturisticButton(
+                        context,
+                        'Bíblia Compartilhada',
+                        Icons.share,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const BibliaCompartilhadaPage()),
                         ),
                       ),
                     ),

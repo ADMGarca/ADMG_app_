@@ -7,6 +7,7 @@ import 'package:admg_app/screens/mesario/gerenciar_mensagens_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:admg_app/screens/login/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:admg_app/screens/bible/bible_share_page.dart';
 
 class MesarioPage extends StatefulWidget {
   const MesarioPage({super.key});
@@ -183,6 +184,18 @@ class _MesarioPageState extends State<MesarioPage> {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const GerenciarLouvorPage()),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMenuButton(
+                      text: 'Compartilhar Palavra',
+                      icon: Icons.screen_share,
+                      backgroundColor: Colors.purple,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BibleSharePage(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),

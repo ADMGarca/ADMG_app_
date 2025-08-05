@@ -6,6 +6,7 @@ import 'package:admg_app/screens/louvor/louvor_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:admg_app/screens/login/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:admg_app/screens/bible/bible_share_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -548,6 +549,16 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const LouvorPage()),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMenuButton(
+                      text: 'Compartilhar Palavra',
+                      icon: Icons.screen_share,
+                      backgroundColor: Colors.deepPurple,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BibleSharePage()),
                       ),
                     ),
                     const SizedBox(height: 16),
