@@ -64,19 +64,18 @@ class InstitutionalPage extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: buttonSpacing),
-                    // Botões principais responsivos
+                    // Botões principais padronizados
                     isMobile
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 32), // Espaço extra para afastar do topo
-                              // Bíblia Compartilhada em cima
+                              SizedBox(height: 32),
                               Center(
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(maxWidth: 320),
                                   child: _buildFuturisticButton(
                                     context,
-                                    'Bíblia Compartilhada',
+                                    'Acompanhar Leitura',
                                     Icons.share,
                                     () => Navigator.push(
                                       context,
@@ -89,56 +88,65 @@ class InstitutionalPage extends StatelessWidget {
                                 ),
                               ),
                               SizedBox(height: buttonSpacing),
-                              // Bíblia e Harpa lado a lado
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: Center(
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(maxWidth: 160),
-                                        child: _buildFuturisticButton(
-                                          context,
-                                          'Bíblia',
-                                          Icons.book,
-                                          () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => const BiblePage()),
-                                          ),
-                                          fontSize: buttonFontSize,
-                                          iconSize: buttonIconSize,
-                                        ),
-                                      ),
+                              Center(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: 320),
+                                  child: _buildFuturisticButton(
+                                    context,
+                                    'Bíblia',
+                                    Icons.book,
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => const BiblePage()),
                                     ),
+                                    fontSize: buttonFontSize,
+                                    iconSize: buttonIconSize,
                                   ),
-                                  SizedBox(width: buttonSpacing),
-                                  Expanded(
-                                    child: Center(
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(maxWidth: 160),
-                                        child: _buildFuturisticButton(
-                                          context,
-                                          'Harpa',
-                                          Icons.music_note,
-                                          () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => const HarpaPage()),
-                                          ),
-                                          fontSize: buttonFontSize,
-                                          iconSize: buttonIconSize,
-                                        ),
-                                      ),
+                                ),
+                              ),
+                              SizedBox(height: buttonSpacing),
+                              Center(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: 320),
+                                  child: _buildFuturisticButton(
+                                    context,
+                                    'Harpa',
+                                    Icons.music_note,
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => const HarpaPage()),
                                     ),
+                                    fontSize: buttonFontSize,
+                                    iconSize: buttonIconSize,
                                   ),
-                                ],
+                                ),
                               ),
                             ],
                           )
                         : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 320),
+                                child: _buildFuturisticButton(
+                                  context,
+                                  'Acompanhar Leitura',
+                                  Icons.share,
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const BibliaCompartilhadaPage()),
+                                  ),
+                                  fontSize: buttonFontSize,
+                                  iconSize: buttonIconSize,
+                                ),
+                              ),
+                              SizedBox(width: buttonSpacing),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 320),
                                 child: _buildFuturisticButton(
                                   context,
                                   'Bíblia',
@@ -153,22 +161,8 @@ class InstitutionalPage extends StatelessWidget {
                                 ),
                               ),
                               SizedBox(width: buttonSpacing),
-                              Expanded(
-                                child: _buildFuturisticButton(
-                                  context,
-                                  'Bíblia Compartilhada',
-                                  Icons.share,
-                                  () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const BibliaCompartilhadaPage()),
-                                  ),
-                                  fontSize: buttonFontSize,
-                                  iconSize: buttonIconSize,
-                                ),
-                              ),
-                              SizedBox(width: buttonSpacing),
-                              Expanded(
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 320),
                                 child: _buildFuturisticButton(
                                   context,
                                   'Harpa',
@@ -286,6 +280,7 @@ class InstitutionalPage extends StatelessWidget {
     double fontSize = 24,
     double iconSize = 50,
   }) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -306,22 +301,42 @@ class InstitutionalPage extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: iconSize, color: Colors.white),
-                const SizedBox(height: 8),
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 24.0),
+            child: isMobile
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: iconSize, color: Colors.white),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Text(
+                          text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: iconSize, color: Colors.white),
+                      const SizedBox(height: 8),
+                      Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
