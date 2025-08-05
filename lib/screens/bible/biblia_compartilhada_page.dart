@@ -10,6 +10,7 @@ class BibliaCompartilhadaPage extends StatefulWidget {
 
 
 class _BibliaCompartilhadaPageState extends State<BibliaCompartilhadaPage> {
+  bool fullscreen = true;
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> ultimasLeituras = [];
   bool carregando = true;
@@ -65,65 +66,61 @@ class _BibliaCompartilhadaPageState extends State<BibliaCompartilhadaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bíblia Compartilhada'),
-        centerTitle: true,
-      ),
+      appBar: null,
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : ultimasLeituras.isEmpty
               ? const Center(child: Text('Nenhum versículo compartilhado no momento.'))
-              : Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(ultimasLeituras.length, (index) {
-                      final leitura = ultimasLeituras[index];
-                      final isDestaque = index == 0;
-                      return Opacity(
-                        opacity: isDestaque ? 1.0 : 0.4,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Card(
-                            elevation: isDestaque ? 8 : 2,
-                            color: isDestaque ? Colors.yellow.withOpacity(0.4) : Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '${leitura['livro']} ${leitura['capitulo']}:${leitura['versiculo']}',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDestaque ? Colors.black : Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    leitura['texto'] ?? '',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDestaque ? Colors.black : Colors.black87,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Atualizado em: ${leitura['atualizado_em'] ?? ''}',
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
-                                  ),
-                                ],
-                              ),
+              : Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: () {}, // desabilita sair do fullscreen ao clicar no card
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Colors.yellow.withOpacity(0.4),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${ultimasLeituras[0]['livro']} ${ultimasLeituras[0]['capitulo']}:${ultimasLeituras[0]['versiculo']}',
+                                  style: const TextStyle(fontSize: 38, fontWeight: FontWeight.bold, color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 32),
+                                Text(
+                                  ultimasLeituras[0]['texto'] ?? '',
+                                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    }),
-                  ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).maybePop();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(Icons.close, color: Colors.white, size: 28),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
     );
   }
