@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:admg_app/screens/home_page.dart';
 import 'package:admg_app/screens/mesario_page.dart';
 import 'package:admg_app/screens/tesoureiro/tesoureiro_page.dart';
+import 'package:admg_app/screens/secretario/secretario_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:admg_app/screens/setor_selection_page.dart';
 
@@ -60,6 +61,8 @@ class _LoginPageState extends State<LoginPage> {
         query = query.eq('cargo', 'tesoureiro');
       } else if (widget.userType == 'mesario_dirigente') {
         query = query.or('cargo.eq.mesario,cargo.eq.dirigente');
+      } else if (widget.userType == 'secretaria') {
+        query = query.eq('cargo', 'secretario');
       }
 
       final response = await query.order('nome');
@@ -251,6 +254,13 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          });
+        } else if (cargo == 'secretario') {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SecretarioPage()),
             );
           });
         } else {
