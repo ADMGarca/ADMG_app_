@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:admg_app/screens/login/login_page.dart';
 import 'package:admg_app/screens/secretario/gerenciar_usuarios_page.dart';
+import 'package:admg_app/screens/secretario/gerenciar_membros_page.dart';
 
 class SecretarioPage extends StatelessWidget {
   const SecretarioPage({super.key});
@@ -88,14 +89,12 @@ class SecretarioPage extends StatelessWidget {
                         text: 'Gerenciar Membros',
                         icon: Icons.person_add,
                         description: 'Cadastrar e gerenciar membros da igreja',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Funcionalidade em desenvolvimento'),
-                            ),
-                          );
-                        },
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const GerenciarMembrosPage(),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       _buildMenuButton(
