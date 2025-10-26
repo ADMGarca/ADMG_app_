@@ -25,8 +25,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Use 'channel' for channel names like 'stable' (the action expects 'channel' when a channel is provided)
-          channel: 'stable'
+          # Pin the Flutter version to match the developer's local SDK (3.16.8) to avoid CI incompatibilities
+          flutter-version: '3.16.8'
 
       - name: Cache pub packages
         uses: actions/cache@v4
@@ -39,8 +39,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Show Flutter version
+        run: |
+          flutter --version
+
+      - name: Flutter doctor (diagnostic)
+        run: |
+          flutter doctor -v || true
+
       - name: Build Flutter web (release)
-        run: flutter build web --release --base-href /ADMG_app_/
+        run: |
+          # verbose build to capture detailed logs for CI debugging
+          flutter build web --release --base-href /ADMG_app_/ -v
 
       - name: Prepare docs folder
         run: |

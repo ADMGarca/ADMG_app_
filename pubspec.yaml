@@ -18,7 +18,10 @@ dependencies:
   # lowered to ^1.2.0 to support Dart 3.2.5 (your SDK)
   http: ^1.2.0
   pdf: ^3.10.7
-  printing: ^5.12.0
+  # Temporarily disable `printing` when building for web to avoid FFI/JS interop
+  # issues with the current Dart SDK (3.2.5). Re-enable or upgrade Flutter/Dart
+  # (Dart >=3.3.0) and the `printing` package later to restore printing support.
+  # printing: ^5.12.0
   flutter_masked_text2: ^0.9.1
 
 dev_dependencies:
