@@ -33,24 +33,6 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <script src="flutter.js" defer></script>
-  <script>
-    // Carrega a entrada do Flutter (main.dart.js) após o carregamento da página.
-    // Substitui a referência a flutter_bootstrap.js ausente.
-    window.addEventListener('load', function () {
-      if (window._flutter && _flutter.loader && _flutter.loader.loadEntrypoint) {
-        _flutter.loader.loadEntrypoint({ entrypointUrl: 'main.dart.js' })
-          .then(function (engineInitializer) { return engineInitializer.initializeEngine(); })
-          .then(function (appRunner) { return appRunner.runApp(); })
-          .catch(function (err) { console.error('Erro ao carregar Flutter:', err); });
-      } else {
-        // Fallback simples: tenta carregar main.dart.js diretamente
-        var s = document.createElement('script');
-        s.src = 'main.dart.js';
-        s.type = 'application/javascript';
-        document.body.appendChild(s);
-      }
-    });
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
