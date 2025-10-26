@@ -25,7 +25,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          # Use 'channel' for channel names like 'stable' (the action expects 'channel' when a channel is provided)
+          channel: 'stable'
 
       - name: Cache pub packages
         uses: actions/cache@v4
