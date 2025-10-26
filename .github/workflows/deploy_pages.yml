@@ -58,6 +58,23 @@ jobs:
           mkdir -p docs
           cp -r build/web/* docs/
 
+      - name: Add flutter_bootstrap.js fallback (if missing)
+        run: |
+          # Some build outputs may reference flutter_bootstrap.js which isn't present.
+          # Create a minimal bootstrap that loads main.dart.js so Pages won't render blank.
+          if [ ! -f docs/flutter_bootstrap.js ]; then
+            cat > docs/flutter_bootstrap.js <<'EOF'
+            (function(){
+              try {
+                var s = document.createElement('script');
+                s.src = 'main.dart.js';
+                s.defer = true;
+                document.body.appendChild(s);
+              } catch(e) { console.error(e); }
+            })();
+            EOF
+          fi
+
       - name: Commit and push docs to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
