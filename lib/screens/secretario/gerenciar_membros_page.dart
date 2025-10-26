@@ -156,7 +156,7 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Reutiliza a mesma estrutura do cadastro com campos pré-preenchidos
+                  // Reutiliza a mesma estrutura do  cadastro com campos pré-preenchidos
                   TextFormField(
                     controller: nomeController,
                     decoration: const InputDecoration(
