@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:admg_app/screens/home_page.dart';
-import 'package:admg_app/screens/login/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:admg_app/screens/tesoureiro/tesoureiro_page.dart';
 import 'package:admg_app/screens/tesoureiro/tesoureiro_master_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -48,8 +47,8 @@ class _SetorSelectionPageState extends State<SetorSelectionPage> {
 
   Future<void> _carregarSetoresDisponiveis() async {
     try {
-      final response = await supabase.from('setor').select('nome');
-      if (response != null && response.isNotEmpty) {
+  final response = await supabase.from('setor').select('nome');
+  if (response.isNotEmpty) {
         // Prepare variables for setState
         List<String> tempSetoresDisponiveis = [];
         String? tempSetorSelecionado;

@@ -79,47 +79,66 @@ Future<pw.Document> newPdfDoc() async {
   return pw.Document(theme: theme);
 }
 
-/// Constrói o cabeçalho em formato PDF.
+/// Constrói o cabeçalho em formato PDF, com medidas enxutas e textos centralizados.
 /// Passe [logo] quando disponível; se null, renderiza apenas texto.
- pw.Widget buildPdfHeader(BrandingInfo b, {pw.ImageProvider? logo}) {
+pw.Widget buildPdfHeader(BrandingInfo b, {pw.ImageProvider? logo}) {
+  // Tamanhos e espaçamentos ajustados: títulos e endereço bem centralizados e mais próximos
+  const double titleSize = 16; // títulos maiores
+  const double addrSize = 11; // endereço um pouco maior
+  const double cnpjSize = 12;
+  const double gapSmall = 4; // menor para aproximar as seções
+  const double gapAfterLine = 2; // bem perto do título
+  const double gapLarge = 14;
+  const double lineH = 1.0;
+  const double logoW = 140; // logo maior
+  const double logoH = 120;
+
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.stretch,
     children: [
       pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Container(
-            width: 110,
-            height: 110,
-            alignment: pw.Alignment.centerLeft,
-            child: logo != null ? pw.Image(logo, fit: pw.BoxFit.contain) : pw.SizedBox(),
-          ),
-          pw.SizedBox(width: 12),
+          if (logo != null)
+            pw.Container(
+              width: logoW,
+              height: logoH,
+              alignment: pw.Alignment.centerLeft,
+              child: pw.Image(logo, fit: pw.BoxFit.contain),
+            ),
+          if (logo != null) pw.SizedBox(width: 16),
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text(b.line1Title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                pw.Text(b.line2Title, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 8),
-                pw.Container(height: 1, color: pdf.PdfColors.black),
+                pw.Text(b.line1Title.toUpperCase(), style: pw.TextStyle(fontSize: titleSize, fontWeight: pw.FontWeight.bold)),
+                pw.Text(b.line2Title.toUpperCase(), style: pw.TextStyle(fontSize: titleSize, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: gapAfterLine),
+                pw.Container(height: lineH, color: pdf.PdfColors.black),
+                // Endereço e CNPJ dentro da mesma coluna (à direita do logo)
+                pw.SizedBox(height: gapSmall),
+                pw.Text(
+                  b.addressLine1,
+                  style: const pw.TextStyle(fontSize: addrSize),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.Text(
+                  b.addressLine2,
+                  style: const pw.TextStyle(fontSize: addrSize),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  b.cnpj,
+                  style: const pw.TextStyle(fontSize: cnpjSize),
+                  textAlign: pw.TextAlign.center,
+                ),
               ],
             ),
           ),
         ],
       ),
-  pw.SizedBox(height: 8),
-  pw.Text(b.addressLine1, style: const pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center),
-  pw.Text(b.addressLine2, style: const pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center),
-      pw.SizedBox(height: 6),
-      pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.center,
-        children: [
-          pw.Text('CNPJ: ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-          pw.Text(b.cnpj, style: const pw.TextStyle(fontSize: 11)),
-        ],
-      ),
-      pw.SizedBox(height: 16),
+      pw.SizedBox(height: gapLarge),
     ],
   );
 }

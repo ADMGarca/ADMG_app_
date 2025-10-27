@@ -343,7 +343,7 @@ class _GerenciarUsuariosPageState extends State<GerenciarUsuariosPage> {
   }
 
   Color _getCargoColor(String cargo) {
-    switch (cargo?.toLowerCase()) {
+  switch (cargo.toLowerCase()) {
       case 'secretario':
         return Colors.purple;
       case 'tesoureiro':

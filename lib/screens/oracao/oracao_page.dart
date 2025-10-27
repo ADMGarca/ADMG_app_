@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'oracao_table.dart';
-import '../../utils/date_formatter.dart';
 
 class PedidoOracaoPage extends StatefulWidget {
   const PedidoOracaoPage({super.key});
@@ -46,7 +45,7 @@ class _PedidoOracaoPageState extends State<PedidoOracaoPage> {
           .select()
           .order('data', ascending: false);
 
-      if (response != null && response.isNotEmpty) {
+  if (response.isNotEmpty) {
         setState(() {
           pedidos = List<Map<String, dynamic>>.from(response);
           // Aplica o filtro de busca atual

@@ -67,30 +67,30 @@ class _LoginPageState extends State<LoginPage> {
 
       final response = await query.order('nome');
 
-      if (response != null) {
-        final uniqueUsers = <String, Map<String, dynamic>>{};
-        for (var user in response) {
-          final normalizedName = user['nome']?.toString().toLowerCase().trim();
-          if (normalizedName != null &&
-              normalizedName.isNotEmpty &&
-              !uniqueUsers.containsKey(normalizedName)) {
-            uniqueUsers[normalizedName] = user;
+      final uniqueUsers = <String, Map<String, dynamic>>{};
+      for (var user in response) {
+        final dynamic raw = user['nome'];
+        final String normalizedName = raw == null
+            ? ''
+            : raw.toString().toLowerCase().trim();
+        if (normalizedName.isNotEmpty &&
+            !uniqueUsers.containsKey(normalizedName)) {
+          uniqueUsers[normalizedName] = user;
+        }
+      }
+      setState(() {
+        _usuarios = uniqueUsers.values.toList();
+        if (_usuarioSelecionado != null) {
+          final selectedNormalized =
+              _usuarioSelecionado!.toLowerCase().trim();
+          if (!uniqueUsers.containsKey(selectedNormalized)) {
+            _usuarioSelecionado = null;
+            _nome = '';
           }
         }
-        setState(() {
-          _usuarios = uniqueUsers.values.toList();
-          if (_usuarioSelecionado != null) {
-            final selectedNormalized =
-                _usuarioSelecionado!.toLowerCase().trim();
-            if (!uniqueUsers.containsKey(selectedNormalized)) {
-              _usuarioSelecionado = null;
-              _nome = '';
-            }
-          }
-        });
-        print(
-            'DEBUG - _carregarUsuarios: Usuários carregados e normalizados. Total: ${_usuarios.length}');
-      }
+      });
+      print(
+          'DEBUG - _carregarUsuarios: Usuários carregados e normalizados. Total: ${_usuarios.length}');
     } catch (e) {
       print('ERRO - _carregarUsuarios: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,9 +108,13 @@ class _LoginPageState extends State<LoginPage> {
 
     if (nomeSalvo != null && senhaSalva != null) {
       final nomeSalvoNormalizado = nomeSalvo.toLowerCase().trim();
-      final usuarioExistente = _usuarios.any((usuario) =>
-          (usuario['nome']?.toString()?.toLowerCase()?.trim() ?? '') ==
-          nomeSalvoNormalizado);
+      final usuarioExistente = _usuarios.any((usuario) {
+        final dynamic raw = usuario['nome'];
+        final String normalized = raw == null
+            ? ''
+            : raw.toString().toLowerCase().trim();
+        return normalized == nomeSalvoNormalizado;
+      });
       if (usuarioExistente) {
         setState(() {
           _nome = nomeSalvoNormalizado;
@@ -372,15 +376,19 @@ class _LoginPageState extends State<LoginPage> {
                               isExpanded: true,
                               items: _usuarios
                                   .map<DropdownMenuItem<String>>((usuario) {
-                                final nome = usuario['nome']
-                                        ?.toString()
-                                        ?.toLowerCase()
-                                        ?.trim() ??
-                                    '';
-                                final setor = usuario['setor']
-                                        ?.toString()
-                                        ?.toLowerCase() ??
-                                    '';
+                final dynamic rawNome = usuario['nome'];
+                final String nome = rawNome == null
+                  ? ''
+                  : rawNome
+                    .toString()
+                    .toLowerCase()
+                    .trim();
+                final dynamic rawSetor = usuario['setor'];
+                final String setor = rawSetor == null
+                  ? ''
+                  : rawSetor
+                    .toString()
+                    .toLowerCase();
                                 Color setorColor = Colors.black54;
 
                                 if (setor == 'dirigente') {

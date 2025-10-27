@@ -51,10 +51,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
   DateTime _mesFiltro = DateTime.now();
   bool _editando = false;
   String _idTransacaoEditando = '';
-  String _setorUsuario = '';
   String _idUsuario = '';
-  String _nomeUsuario = '';
-  bool _isMaster = false;
   List<String> _setoresDisponiveis = [];
   String? _setorFiltroSelecionado;
   String? _setorTransacaoEditando;
@@ -62,10 +59,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
   @override
   void initState() {
     super.initState();
-    _idUsuario = widget.usuarioId;
-    _nomeUsuario = widget.usuarioNome;
-    _setorUsuario = widget.usuarioSetor;
-    _isMaster = widget.isMaster;
+  _idUsuario = widget.usuarioId;
     _setorFiltroSelecionado = widget.setorInicial;
     _initTesoureiroMaster();
   }
@@ -90,8 +84,8 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
 
   Future<void> _carregarSetoresDisponiveis() async {
     try {
-      final response = await supabase.from('setor').select('nome');
-      if (response != null && response.isNotEmpty) {
+  final response = await supabase.from('setor').select('nome');
+  if (response.isNotEmpty) {
         final List<String> fetchedSetores = List<String>.from(
             response.map((s) => s['nome'].toString().trim().toLowerCase()));
         setState(() {
@@ -114,12 +108,10 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
         query = query.ilike('setor', filterValue);
       }
       final response = await query.order('data', ascending: false);
-      if (response != null) {
-        setState(() {
-          _transacoes = List<Map<String, dynamic>>.from(response);
-          _filtrarTransacoesPorMes();
-        });
-      }
+      setState(() {
+        _transacoes = List<Map<String, dynamic>>.from(response);
+        _filtrarTransacoesPorMes();
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao carregar transações: $e')),
@@ -334,8 +326,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
     final font = await PdfGoogleFonts.notoSansRegular();
 
     final pdf = pw.Document();
-    final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
-    final dataHoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
 
     pdf.addPage(
       pw.MultiPage(
@@ -1145,7 +1136,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
 
 // Novo StatefulWidget para gerenciar o diálogo de Testemunhas
 class _TestemunhasDialog extends StatefulWidget {
-  const _TestemunhasDialog({super.key});
+  const _TestemunhasDialog();
 
   @override
   State<_TestemunhasDialog> createState() => _TestemunhasDialogState();

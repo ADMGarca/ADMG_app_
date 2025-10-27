@@ -50,20 +50,14 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
   DateTime _mesFiltro = DateTime.now();
   bool _editando = false;
   String _idTransacaoEditando = '';
-  String _setorUsuario = '';
   String _idUsuario = '';
-  String _nomeUsuario = '';
-  bool _isMaster = false;
   List<String> _setoresDisponiveis = [];
   String _setorSelecionado = '';
 
   @override
   void initState() {
     super.initState();
-    _idUsuario = widget.usuarioId;
-    _nomeUsuario = widget.usuarioNome;
-    _setorUsuario = widget.usuarioSetor;
-    _isMaster = widget.isMaster;
+  _idUsuario = widget.usuarioId;
     _setorSelecionado = widget.usuarioSetor;
     _initTesoureiro();
   }
@@ -84,7 +78,7 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
     // Estes foram movidos para initState para garantir a inicialização antes de _initTesoureiro.
 
     // Se for um mestre, carrega os setores disponíveis.
-    if (_isMaster) {
+  if (widget.isMaster) {
       await _carregarSetoresDisponiveis();
       // Se o setor selecionado ainda estiver vazio e houver setores disponíveis,
       // define o primeiro setor disponível como padrão para o mestre.
@@ -110,12 +104,10 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
           .eq('setor', _setorSelecionado)
           .order('data', ascending: false);
 
-      if (response != null) {
-        setState(() {
-          _transacoes = List<Map<String, dynamic>>.from(response);
-          _filtrarTransacoesPorMes();
-        });
-      }
+      setState(() {
+        _transacoes = List<Map<String, dynamic>>.from(response);
+        _filtrarTransacoesPorMes();
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao carregar transações: $e')),
@@ -279,78 +271,7 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
     }
   }
 
-  Future<void> _selecionarMes(BuildContext context) async {
-    int mesSelecionado = _mesFiltro.month;
-    int anoSelecionado = _mesFiltro.year;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Selecionar mês e ano'),
-          content: Row(
-            children: [
-              // Dropdown para mês
-              Expanded(
-                child: DropdownButton<int>(
-                  value: mesSelecionado,
-                  items: List.generate(12, (index) {
-                    return DropdownMenuItem(
-                      value: index + 1,
-                      child: Text(DateFormat.MMMM('pt_BR')
-                          .format(DateTime(0, index + 1))),
-                    );
-                  }),
-                  onChanged: (value) {
-                    if (value != null) {
-                      mesSelecionado = value;
-                      // Atualiza o estado do dialog
-                      (context as Element).markNeedsBuild();
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Dropdown para ano
-              Expanded(
-                child: DropdownButton<int>(
-                  value: anoSelecionado,
-                  items: List.generate(30, (index) {
-                    int ano = DateTime.now().year - 15 + index;
-                    return DropdownMenuItem(
-                      value: ano,
-                      child: Text(ano.toString()),
-                    );
-                  }),
-                  onChanged: (value) {
-                    if (value != null) {
-                      anoSelecionado = value;
-                      (context as Element).markNeedsBuild();
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _mesFiltro = DateTime(anoSelecionado, mesSelecionado);
-                  _filtrarTransacoesPorMes();
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('Confirmar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Removido método _selecionarMes não utilizado
 
   Future<void> _sair(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -789,7 +710,7 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
                   ),
                 ),
               ),
-              if (_isMaster && _setoresDisponiveis.isNotEmpty)
+              if (widget.isMaster && _setoresDisponiveis.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
