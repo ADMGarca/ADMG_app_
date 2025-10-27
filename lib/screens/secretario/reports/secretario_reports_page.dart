@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'member_report_page.dart';
 import 'attendance_list_page.dart';
+import 'carta_mudanca_page.dart';
 
 class SecretarioReportsPage extends StatelessWidget {
   const SecretarioReportsPage({super.key});
@@ -35,6 +36,17 @@ class SecretarioReportsPage extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AttendanceListPage()),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _tile(
+              context,
+              icon: Icons.mail_outline,
+              title: 'Carta de Mudança',
+              subtitle: 'Gerar carta para membro selecionado',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CartaMudancaPage()),
               ),
             ),
           ],

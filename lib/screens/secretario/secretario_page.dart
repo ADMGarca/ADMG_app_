@@ -3,6 +3,7 @@ import 'package:admg_app/screens/login/login_page.dart';
 import 'package:admg_app/screens/secretario/gerenciar_usuarios_page.dart';
 import 'package:admg_app/screens/secretario/gerenciar_membros_page.dart';
 import 'package:admg_app/screens/secretario/reports/secretario_reports_page.dart';
+import 'package:admg_app/screens/secretario/config/secretario_config_page.dart';
 
 class SecretarioPage extends StatelessWidget {
   const SecretarioPage({super.key});
@@ -116,14 +117,12 @@ class SecretarioPage extends StatelessWidget {
                         text: 'Configurações',
                         icon: Icons.settings,
                         description: 'Configurar sistema e preferências',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Funcionalidade em desenvolvimento'),
-                            ),
-                          );
-                        },
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SecretarioConfigPage(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

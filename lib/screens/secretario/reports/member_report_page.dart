@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:intl/intl.dart';
+import 'package:admg_app/utils/pdf_branding.dart';
 
 class MemberReportPage extends StatefulWidget {
   const MemberReportPage({super.key});
@@ -17,6 +18,7 @@ class _MemberReportPageState extends State<MemberReportPage> {
   final TextEditingController _search = TextEditingController();
   List<Map<String, dynamic>> _membros = [];
   bool _loading = true;
+  BrandingInfo? _branding;
   String? _cargoFilter;
   String? _situacaoFilter;
   String? _sexoFilter;
@@ -25,6 +27,7 @@ class _MemberReportPageState extends State<MemberReportPage> {
   void initState() {
     super.initState();
     _load();
+    _loadBranding();
   }
 
   Future<void> _load() async {
@@ -37,6 +40,11 @@ class _MemberReportPageState extends State<MemberReportPage> {
       _membros = List<Map<String, dynamic>>.from(resp);
       _loading = false;
     });
+  }
+
+  Future<void> _loadBranding() async {
+    final b = await loadBrandingOrDefault();
+    if (mounted) setState(() => _branding = b);
   }
 
   List<Map<String, dynamic>> get _filtered {
@@ -79,14 +87,22 @@ class _MemberReportPageState extends State<MemberReportPage> {
   }
 
   Future<void> _exportPdf() async {
-    final doc = pw.Document();
+    final doc = await newPdfDoc();
     final rows = _filtered;
+    // carrega logo se houver
+    pw.ImageProvider? logo;
+    final b = _branding ?? BrandingInfo.defaults();
+    if (b.logoUrl != null) {
+      try { logo = await networkImage(b.logoUrl!); } catch (_) {}
+    }
 
     doc.addPage(
       pw.MultiPage(
         pageFormat: pdf.PdfPageFormat.a4,
         build: (ctx) => [
-          pw.Header(level: 0, child: pw.Text('Relatório de Membros')),
+          buildPdfHeader(b, logo: logo),
+          pw.Text('Relatório de Membros', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 8),
           pw.Table.fromTextArray(
             headers: ['Nome', 'Cargo'],
             data: rows
@@ -106,7 +122,12 @@ class _MemberReportPageState extends State<MemberReportPage> {
   }
 
   Future<void> _exportMemberPdf(Map<String, dynamic> m) async {
-    final doc = pw.Document();
+    final doc = await newPdfDoc();
+    pw.ImageProvider? logo;
+    final b = _branding ?? BrandingInfo.defaults();
+    if (b.logoUrl != null) {
+      try { logo = await networkImage(b.logoUrl!); } catch (_) {}
+    }
 
     String? _s(dynamic v) {
       final s = (v ?? '').toString().trim();
@@ -115,9 +136,9 @@ class _MemberReportPageState extends State<MemberReportPage> {
 
     final widgets = <pw.Widget>[];
 
-    widgets.add(
-      pw.Header(level: 0, child: pw.Text('Ficha do Membro')),
-    );
+    widgets.add(buildPdfHeader(b, logo: logo));
+    widgets.add(pw.Text('Ficha do Membro', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)));
+    widgets.add(pw.SizedBox(height: 8));
 
     widgets.add(
       pw.Container(

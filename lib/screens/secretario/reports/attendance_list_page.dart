@@ -3,6 +3,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:printing/printing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:admg_app/utils/pdf_branding.dart';
 
 class AttendanceListPage extends StatefulWidget {
   const AttendanceListPage({super.key});
@@ -20,11 +21,18 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
   final TextEditingController _titulo = TextEditingController(text: 'Lista de Presença - Reunião');
   final TextEditingController _dataTexto = TextEditingController();
   bool _loading = true;
+  BrandingInfo? _branding;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _loadBranding();
+  }
+
+  Future<void> _loadBranding() async {
+    final b = await loadBrandingOrDefault();
+    if (mounted) setState(() => _branding = b);
   }
 
   Future<void> _load() async {
@@ -57,11 +65,18 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
   }
 
   Future<void> _exportPdf() async {
-    final doc = pw.Document();
+    final doc = await newPdfDoc();
     // Somente membros selecionados dentre os filtrados por cargo
     final rows = _filtrados
         .where((m) => _membrosSelecionados.contains((m['id'] ?? '').toString()))
         .toList();
+
+    // carrega logo se houver
+    pw.ImageProvider? logo;
+    final b = _branding ?? BrandingInfo.defaults();
+    if (b.logoUrl != null) {
+      try { logo = await networkImage(b.logoUrl!); } catch (_) {}
+    }
 
     // Agrupar por cargo
     final Map<String, List<Map<String, dynamic>>> porCargo = {};
@@ -76,6 +91,7 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
         margin: const pw.EdgeInsets.all(32),
         build: (ctx) {
           final widgets = <pw.Widget>[];
+          widgets.add(buildPdfHeader(b, logo: logo));
           widgets.add(pw.Text(_titulo.text, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)));
           if (_dataTexto.text.trim().isNotEmpty) {
             widgets.add(pw.Text('Data: ${_dataTexto.text.trim()}'));
