@@ -6,7 +6,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: '>=3.7.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -14,19 +14,18 @@ dependencies:
   cupertino_icons: ^1.0.2
   supabase_flutter: ^2.8.4
   shared_preferences: ^2.2.2
-  intl: ^0.18.0
-  # lowered to ^1.2.0 to support Dart 3.2.5 (your SDK)
-  http: ^1.2.0
-  pdf: ^3.10.7
-  printing: ^5.12.0
+  intl: ^0.20.2
+  # updated to latest compatible with Dart 3.7
+  http: ^1.5.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
   flutter_masked_text2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # downgraded to be compatible with Dart 3.2.x (your SDK is 3.2.5)
-  # If you upgrade Flutter/Dart later, consider restoring to a newer flutter_lints.
-  flutter_lints: ^2.0.0
+  # keep lints compatible with current SDK
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
