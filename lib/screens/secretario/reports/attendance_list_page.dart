@@ -15,7 +15,8 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> _membros = [];
   List<String> _cargos = [];
-  final Set<String> _selecionados = {};
+  final Set<String> _selecionados = {}; // cargos selecionados
+  final Set<String> _membrosSelecionados = {}; // membros (ids) selecionados
   final TextEditingController _titulo = TextEditingController(text: 'Lista de Presença - Reunião');
   final TextEditingController _dataTexto = TextEditingController();
   bool _loading = true;
@@ -42,6 +43,8 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
       _membros = list;
       _cargos = cargos;
       _selecionados.addAll(cargos); // por padrão, todos
+      _membrosSelecionados
+          .addAll(list.map((m) => (m['id'] ?? '').toString()).where((id) => id.isNotEmpty)); // por padrão, todos membros
       _loading = false;
     });
   }
@@ -55,7 +58,10 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
 
   Future<void> _exportPdf() async {
     final doc = pw.Document();
-    final rows = _filtrados;
+    // Somente membros selecionados dentre os filtrados por cargo
+    final rows = _filtrados
+        .where((m) => _membrosSelecionados.contains((m['id'] ?? '').toString()))
+        .toList();
 
     // Agrupar por cargo
     final Map<String, List<Map<String, dynamic>>> porCargo = {};
@@ -115,6 +121,17 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
     await Printing.layoutPdf(onLayout: (format) async => doc.save());
   }
 
+  void _toggleSelectAllFiltered(bool select) {
+    final ids = _filtrados.map((m) => (m['id'] ?? '').toString());
+    setState(() {
+      if (select) {
+        _membrosSelecionados.addAll(ids);
+      } else {
+        _membrosSelecionados.removeAll(ids.toList());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,6 +178,24 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
                                 ))
                             .toList(),
                       ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text('Selecionados: ${_filtrados.where((m) => _membrosSelecionados.contains((m['id'] ?? '').toString())).length}/${_filtrados.length}'),
+                          const Spacer(),
+                          TextButton.icon(
+                            onPressed: () => _toggleSelectAllFiltered(true),
+                            icon: const Icon(Icons.done_all),
+                            label: const Text('Selecionar todos'),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton.icon(
+                            onPressed: () => _toggleSelectAllFiltered(false),
+                            icon: const Icon(Icons.clear_all),
+                            label: const Text('Limpar seleção'),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -170,7 +205,26 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
                     itemCount: _filtrados.length,
                     itemBuilder: (ctx, i) {
                       final m = _filtrados[i];
+                      final id = (m['id'] ?? '').toString();
+                      final marcado = _membrosSelecionados.contains(id);
                       return ListTile(
+                        onTap: () => setState(() {
+                          if (marcado) {
+                            _membrosSelecionados.remove(id);
+                          } else {
+                            _membrosSelecionados.add(id);
+                          }
+                        }),
+                        leading: Checkbox(
+                          value: marcado,
+                          onChanged: (v) => setState(() {
+                            if (v == true) {
+                              _membrosSelecionados.add(id);
+                            } else {
+                              _membrosSelecionados.remove(id);
+                            }
+                          }),
+                        ),
                         title: Text((m['nome_completo'] ?? '').toString()),
                         subtitle: Text((m['cargo_funcao'] ?? '').toString()),
                       );
