@@ -17,6 +17,9 @@ class _MemberReportPageState extends State<MemberReportPage> {
   final TextEditingController _search = TextEditingController();
   List<Map<String, dynamic>> _membros = [];
   bool _loading = true;
+  String? _cargoFilter;
+  String? _situacaoFilter;
+  String? _sexoFilter;
 
   @override
   void initState() {
@@ -38,12 +41,41 @@ class _MemberReportPageState extends State<MemberReportPage> {
 
   List<Map<String, dynamic>> get _filtered {
     final q = _search.text.trim().toLowerCase();
-    if (q.isEmpty) return _membros;
-    return _membros.where((m) {
-      final nome = (m['nome_completo'] ?? '').toString().toLowerCase();
-      final cargo = (m['cargo_funcao'] ?? '').toString().toLowerCase();
-      return nome.contains(q) || cargo.contains(q);
-    }).toList();
+    Iterable<Map<String, dynamic>> list = _membros;
+    // text search
+    if (q.isNotEmpty) {
+      list = list.where((m) {
+        final nome = (m['nome_completo'] ?? '').toString().toLowerCase();
+        final cargo = (m['cargo_funcao'] ?? '').toString().toLowerCase();
+        return nome.contains(q) || cargo.contains(q);
+      });
+    }
+    // cargo filter
+    if (_cargoFilter != null && _cargoFilter!.trim().isNotEmpty) {
+      final f = _cargoFilter!.trim().toLowerCase();
+      list = list.where((m) => (m['cargo_funcao'] ?? '').toString().trim().toLowerCase() == f);
+    }
+    // situação filter
+    if (_situacaoFilter != null && _situacaoFilter!.trim().isNotEmpty) {
+      final f = _situacaoFilter!.trim().toLowerCase();
+      list = list.where((m) => (m['situacao_atual'] ?? '').toString().trim().toLowerCase() == f);
+    }
+    // sexo filter
+    if (_sexoFilter != null && _sexoFilter!.trim().isNotEmpty) {
+      final f = _sexoFilter!.trim().toLowerCase();
+      list = list.where((m) => (m['sexo'] ?? '').toString().trim().toLowerCase() == f);
+    }
+    return list.toList();
+  }
+
+  List<String> _distinctOptions(String key) {
+    final set = <String>{};
+    for (final m in _membros) {
+      final v = (m[key] ?? '').toString().trim();
+      if (v.isNotEmpty) set.add(v);
+    }
+    final list = set.toList()..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return list;
   }
 
   Future<void> _exportPdf() async {
@@ -354,6 +386,84 @@ class _MemberReportPageState extends State<MemberReportPage> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                // Filtros avançados
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cargoOpts = _distinctOptions('cargo_funcao');
+                      final situacaoOpts = _distinctOptions('situacao_atual');
+                      final sexoOpts = _distinctOptions('sexo');
+                      final hasAnyFilter = (_cargoFilter?.isNotEmpty ?? false) || (_situacaoFilter?.isNotEmpty ?? false) || (_sexoFilter?.isNotEmpty ?? false);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 8,
+                            children: [
+                              SizedBox(
+                                width: 260,
+                                child: DropdownButtonFormField<String>(
+                                  value: _cargoFilter,
+                                  isDense: true,
+                                  items: cargoOpts
+                                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                                      .toList(),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Cargo',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (v) => setState(() => _cargoFilter = v),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 220,
+                                child: DropdownButtonFormField<String>(
+                                  value: _situacaoFilter,
+                                  isDense: true,
+                                  items: situacaoOpts
+                                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                                      .toList(),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Situação',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (v) => setState(() => _situacaoFilter = v),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 180,
+                                child: DropdownButtonFormField<String>(
+                                  value: _sexoFilter,
+                                  isDense: true,
+                                  items: sexoOpts
+                                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                                      .toList(),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Sexo',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (v) => setState(() => _sexoFilter = v),
+                                ),
+                              ),
+                              if (hasAnyFilter)
+                                TextButton.icon(
+                                  onPressed: () => setState(() {
+                                    _cargoFilter = null;
+                                    _situacaoFilter = null;
+                                    _sexoFilter = null;
+                                  }),
+                                  icon: const Icon(Icons.filter_alt_off),
+                                  label: const Text('Limpar filtros'),
+                                ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 Expanded(
