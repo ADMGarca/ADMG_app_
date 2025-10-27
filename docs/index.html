@@ -33,6 +33,31 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    (function(){
+      // Try a list of absolute bootstrap/script paths in order until one loads.
+      // This handles GitHub Pages normalizing the repo path to lowercase and
+      // ensures the app loads whether assets are under /admg_app_/ or /ADMG_app_/.
+      function tryPaths(paths, i){
+        if(i >= paths.length) return;
+        var s = document.createElement('script');
+        s.src = paths[i];
+        s.async = false;
+        s.onload = function(){ console.log('Loaded', paths[i]); };
+        s.onerror = function(){ tryPaths(paths, i+1); };
+        document.head.appendChild(s);
+      }
+
+      var paths = [
+        '/admg_app_/flutter_bootstrap.js',
+        '/ADMG_app_/flutter_bootstrap.js',
+        '/admg_app_/flutter.js',
+        '/ADMG_app_/flutter.js',
+        '/admg_app_/main.dart.js',
+        '/ADMG_app_/main.dart.js'
+      ];
+      tryPaths(paths, 0);
+    })();
+  </script>
 </body>
 </html>
