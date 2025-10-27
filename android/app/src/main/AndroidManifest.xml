@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions for image picking and camera capture -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- For Android 13+ to read images from gallery -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Backwards compatibility for older Android versions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application
         android:label="admg_app"
         android:name="${applicationName}"

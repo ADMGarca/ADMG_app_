@@ -1,7 +1,10 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:admg_app/utils/image_uploader.dart';
 
 class GerenciarMembrosPage extends StatefulWidget {
   const GerenciarMembrosPage({super.key});
@@ -141,6 +144,11 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
         membro['endereco_estado']?.toString() ?? 'GO';
     String escolaridadeSelecionada =
         membro['escolaridade']?.toString() ?? 'Ensino Fundamental';
+
+    // Estado local para foto atual e troca de foto
+    String? fotoUrlAtual = membro['foto_url']?.toString();
+    bool enviandoFoto = false;
+    final uploader = ImageUploader();
 
     showDialog(
       context: context,
@@ -531,6 +539,93 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
                       decoration: const InputDecoration(
                           labelText: 'Observações Pastorais',
                           border: OutlineInputBorder())),
+
+                  const SizedBox(height: 12),
+                  // Foto do Membro - edição
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundImage: (fotoUrlAtual != null && fotoUrlAtual!.isNotEmpty)
+                              ? NetworkImage(fotoUrlAtual!)
+                              : null,
+                          child: (fotoUrlAtual == null || fotoUrlAtual!.isEmpty)
+                              ? const Icon(Icons.person, size: 36)
+                              : null,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Foto do Membro', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: enviandoFoto
+                              ? null
+                              : () async {
+                                  try {
+                                    setDialogState(() => enviandoFoto = true);
+                                    // escolher fonte
+                                    final source = await showModalBottomSheet<ImageSource?>(
+                                      context: context,
+                                      builder: (ctx) => SafeArea(
+                                        child: Wrap(children: [
+                                          ListTile(
+                                            leading: const Icon(Icons.photo_library_outlined),
+                                            title: const Text('Galeria'),
+                                            onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Icons.photo_camera_outlined),
+                                            title: const Text('Câmera'),
+                                            onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                                          ),
+                                        ]),
+                                      ),
+                                    );
+                                    if (source == null) return;
+
+                                    final XFile? picked = source == ImageSource.camera
+                                        ? await uploader.captureFromCamera()
+                                        : await uploader.pickFromGallery();
+                                    if (picked == null) return;
+
+                                    final url = await uploader.uploadForMember(
+                                      file: picked,
+                                      memberId: membro['id'].toString(),
+                                    );
+                                    await uploader.saveAvatarUrl(
+                                      userId: membro['id'].toString(),
+                                      avatarUrl: url,
+                                      table: 'membros',
+                                      column: 'foto_url',
+                                    );
+                                    setDialogState(() => fotoUrlAtual = url);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Foto atualizada.')),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Erro ao enviar foto: $e')),
+                                      );
+                                    }
+                                  } finally {
+                                    setDialogState(() => enviandoFoto = false);
+                                  }
+                                },
+                          icon: const Icon(Icons.upload),
+                          label: Text(enviandoFoto ? 'Enviando...' : 'Trocar foto'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -710,6 +805,12 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
     String tipoMembroSelecionado = 'Membro antigo';
     String enderecoEstadoSelecionado = 'GO';
     String escolaridadeSelecionada = 'Ensino Fundamental';
+
+    // Estado local para foto escolhida (pré-inserção)
+    final uploader = ImageUploader();
+    XFile? fotoSelecionada;
+    Uint8List? fotoPreview;
+    bool enviandoFoto = false;
 
     showDialog(
       context: context,
@@ -1285,7 +1386,7 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Campo de Foto
+                  // Campo de Foto (pré-visualização e seleção)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -1295,39 +1396,56 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
                     ),
                     child: Column(
                       children: [
-                        const Icon(
-                          Icons.camera_alt,
-                          size: 48,
-                          color: Colors.grey,
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundImage: fotoPreview != null ? MemoryImage(fotoPreview!) : null,
+                          child: fotoPreview == null ? const Icon(Icons.person, size: 36) : null,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Foto do Membro',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Funcionalidade em desenvolvimento',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
+                        const Text('Foto do Membro', style: TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Upload de foto será implementado em breve'),
-                              ),
-                            );
-                          },
+                          onPressed: enviandoFoto
+                              ? null
+                              : () async {
+                                  setDialogState(() => enviandoFoto = true);
+                                  final source = await showModalBottomSheet<ImageSource?>(
+                                    context: context,
+                                    builder: (ctx) => SafeArea(
+                                      child: Wrap(children: [
+                                        ListTile(
+                                          leading: const Icon(Icons.photo_library_outlined),
+                                          title: const Text('Galeria'),
+                                          onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(Icons.photo_camera_outlined),
+                                          title: const Text('Câmera'),
+                                          onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                                        ),
+                                      ]),
+                                    ),
+                                  );
+                                  if (source == null) {
+                                    setDialogState(() => enviandoFoto = false);
+                                    return;
+                                  }
+                                  final XFile? picked = source == ImageSource.camera
+                                      ? await uploader.captureFromCamera()
+                                      : await uploader.pickFromGallery();
+                                  if (picked == null) {
+                                    setDialogState(() => enviandoFoto = false);
+                                    return;
+                                  }
+                                  final bytes = await picked.readAsBytes();
+                                  setDialogState(() {
+                                    fotoSelecionada = picked;
+                                    fotoPreview = bytes;
+                                    enviandoFoto = false;
+                                  });
+                                },
                           icon: const Icon(Icons.upload),
-                          label: const Text('Selecionar Foto'),
+                          label: Text(enviandoFoto ? 'Selecionando...' : 'Selecionar/Tirar Foto'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF42A5F5),
                             foregroundColor: Colors.white,
@@ -1438,7 +1556,36 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
                               : null,
                     };
 
-                    await supabase.from('membros').insert(dadosMembro);
+                    // Inserir e recuperar ID do novo membro
+                    final inserted = await supabase
+                        .from('membros')
+                        .insert(dadosMembro)
+                        .select('id')
+                        .single();
+
+                    // Se houver foto selecionada, fazer upload e salvar URL
+                    if (fotoSelecionada != null) {
+                      try {
+                        final memberId = inserted['id'].toString();
+                        final url = await uploader.uploadForMember(
+                          file: fotoSelecionada!,
+                          memberId: memberId,
+                        );
+                        await uploader.saveAvatarUrl(
+                          userId: memberId,
+                          avatarUrl: url,
+                          table: 'membros',
+                          column: 'foto_url',
+                        );
+                      } catch (e) {
+                        // Não falhar o cadastro só por erro de upload
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Membro criado, mas falhou o upload da foto: $e')),
+                          );
+                        }
+                      }
+                    }
 
                     Navigator.pop(context);
                     _carregarMembros();
@@ -1477,6 +1624,32 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
       default:
         return Colors.grey;
     }
+  }
+
+  Widget _buildMemberAvatar(Map<String, dynamic> membro) {
+    final foto = (membro['foto_url'] ?? '').toString();
+    if (foto.isNotEmpty) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(foto),
+      );
+    }
+    final initial = (membro['nome_completo'] ?? 'M')
+        .toString()
+        .trim()
+        .isNotEmpty
+        ? membro['nome_completo'].toString().substring(0, 1).toUpperCase()
+        : 'M';
+    return CircleAvatar(
+      backgroundColor: _getSituacaoColor(membro['situacao_atual'] ?? ''),
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 
   @override
@@ -1588,21 +1761,7 @@ class _GerenciarMembrosPageState extends State<GerenciarMembrosPage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: _getSituacaoColor(
-                                        membro['situacao_atual']),
-                                    child: Text(
-                                      membro['nome_completo']
-                                              ?.toString()
-                                              .substring(0, 1)
-                                              .toUpperCase() ??
-                                          'M',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
+                                  leading: _buildMemberAvatar(membro),
                                   title: Text(
                                     membro['nome_completo'] ?? 'Sem nome',
                                     style: const TextStyle(
