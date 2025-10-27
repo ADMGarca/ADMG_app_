@@ -118,7 +118,11 @@ class _MemberReportPageState extends State<MemberReportPage> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => doc.save());
+    await Printing.sharePdf(
+      bytes: await doc.save(),
+      filename:
+          'relatorio_membros_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.pdf',
+    );
   }
 
   Future<void> _exportMemberPdf(Map<String, dynamic> m) async {
@@ -222,7 +226,11 @@ class _MemberReportPageState extends State<MemberReportPage> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => doc.save());
+    await Printing.sharePdf(
+      bytes: await doc.save(),
+      filename:
+          'ficha_membro_${(m['nome_completo'] ?? 'membro').toString().replaceAll(' ', '_')}.pdf',
+    );
   }
 
   String? _fmtDate(dynamic iso, dynamic raw) {

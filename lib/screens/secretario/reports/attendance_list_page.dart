@@ -134,7 +134,11 @@ class _AttendanceListPageState extends State<AttendanceListPage> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => doc.save());
+    await Printing.sharePdf(
+      bytes: await doc.save(),
+      filename:
+          'lista_presenca_${DateTime.now().millisecondsSinceEpoch}.pdf',
+    );
   }
 
   void _toggleSelectAllFiltered(bool select) {

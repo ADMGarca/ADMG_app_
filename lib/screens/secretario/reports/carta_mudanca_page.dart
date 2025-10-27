@@ -196,7 +196,11 @@ class _CartaMudancaPageState extends State<CartaMudancaPage> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => doc.save());
+    await Printing.sharePdf(
+      bytes: await doc.save(),
+      filename:
+          'carta_mudanca_${(_sel!['nome_completo'] ?? 'membro').toString().replaceAll(' ', '_')}.pdf',
+    );
   }
 
   String _toUpper(String s) => s.toUpperCase();
