@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:admg_app/utils/pdf_branding.dart';
 
 class TesoureiroMasterPage extends StatefulWidget {
   final String usuarioId;
@@ -323,12 +324,15 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
 
   Future<void> _gerarPDFExtrato(
       BuildContext context, List<String> testemunhas) async {
-    final font = await PdfGoogleFonts.notoSansRegular();
-
-    final pdf = pw.Document();
+    final doc = await newPdfDoc();
+    final branding = await loadBrandingOrDefault();
+    pw.ImageProvider? logo;
+    if (branding.logoUrl != null) {
+      try { logo = await networkImage(branding.logoUrl!); } catch (_) {}
+    }
   final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
 
-    pdf.addPage(
+    doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         build: (pw.Context context) {
@@ -337,19 +341,17 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
             ..._transacoesFiltradas.where((t) => t['tipo'] == 'saida'),
           ];
           return [
-            pw.Center(
-              child: pw.Text(
-                'Extrato Mensal de Transações - $mesAno',
-                style: pw.TextStyle(
-                    fontSize: 24, fontWeight: pw.FontWeight.bold, font: font),
-              ),
+            buildPdfHeader(branding, logo: logo),
+            pw.Text(
+              'Extrato Mensal de Transações - $mesAno',
+              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
             ),
-            pw.SizedBox(height: 20),
+            pw.SizedBox(height: 8),
             pw.Text(
               'Setor: ${_setorFiltroSelecionado ?? 'N/A'}',
-              style: pw.TextStyle(fontSize: 18, font: font),
+              style: const pw.TextStyle(fontSize: 12),
             ),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 8),
             pw.Table.fromTextArray(
               headers: ['Data', 'Tipo', 'Descrição', 'Valor', 'Adicionado por'],
               data: transacoesOrdenadas.map((transacao) {
@@ -370,7 +372,6 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                       color: transacao['tipo'] == 'entrada'
                           ? PdfColors.green
                           : PdfColors.red,
-                      font: font,
                     ),
                   ),
                   transacao['descricao'],
@@ -379,8 +380,8 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                 ];
               }).toList(),
               headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font),
-              cellStyle: pw.TextStyle(font: font),
+                  pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              cellStyle: const pw.TextStyle(),
               border: pw.TableBorder.all(),
               headerDecoration:
                   const pw.BoxDecoration(color: PdfColors.grey300),
@@ -399,20 +400,18 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                       'Total Entradas: R\$ ${NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2).format(_totalEntradas)}',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.green,
-                          font: font),
+                          color: PdfColors.green),
                     ),
                     pw.Text(
                       'Total Saídas: R\$ ${NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2).format(_totalSaidas)}',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.red,
-                          font: font),
+                          color: PdfColors.red),
                     ),
                     pw.Text(
                       'Saldo Atual: R\$ ${NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2).format(_saldoAtual)}',
                       style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold, font: font),
+                          fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -430,14 +429,13 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
                           pw.SizedBox(height: 10),
                           pw.Container(
                               width: 200, height: 1, color: PdfColors.black),
-                          pw.Text(nome, style: pw.TextStyle(font: font)),
+                          pw.Text(nome),
                           pw.SizedBox(height: 20),
                         ],
                       )),
                   pw.SizedBox(height: 30),
                   pw.Text(
-                      '\n\n${_setorFiltroSelecionado ?? ''}, ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
-                      style: pw.TextStyle(font: font)),
+                      '\n\n${_setorFiltroSelecionado ?? ''}, ${DateFormat('dd/MM/yyyy').format(DateTime.now())}'),
                 ],
               ),
             ),
@@ -447,7 +445,7 @@ class _TesoureiroMasterPageState extends State<TesoureiroMasterPage> {
     );
 
     await Printing.sharePdf(
-        bytes: await pdf.save(),
+        bytes: await doc.save(),
         filename:
             'extrato_tesouraria_${DateFormat('MM_yyyy').format(_mesFiltro)}.pdf');
   }

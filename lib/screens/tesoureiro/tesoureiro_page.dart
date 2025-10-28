@@ -8,6 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:admg_app/utils/pdf_branding.dart';
 
 class TesoureiroPage extends StatefulWidget {
   final bool isMaster;
@@ -379,22 +380,22 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
 
   Future<void> _gerarPDFExtrato(
       BuildContext context, List<String> testemunhas) async {
-    final pdf = pw.Document();
-    final font =
-        pw.Font.ttf(await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'));
+    final doc = await newPdfDoc();
+    final branding = await loadBrandingOrDefault();
+    pw.ImageProvider? logo;
+    if (branding.logoUrl != null) {
+      try { logo = await networkImage(branding.logoUrl!); } catch (_) {}
+    }
     final mesAno = DateFormat('MM/yyyy', 'pt_BR').format(_mesFiltro);
-    final dataHoje = DateFormat('dd/MM/yyyy').format(DateTime.now());
     final List<pw.Widget> linhas = [];
 
-    linhas.add(
-      pw.Text('Extrato Financeiro - $mesAno',
-          style: pw.TextStyle(
-              fontSize: 20, fontWeight: pw.FontWeight.bold, font: font)),
-    );
-    linhas.add(pw.SizedBox(height: 8));
-    linhas.add(
-        pw.Text('Data de emissão: $dataHoje', style: pw.TextStyle(font: font)));
-    linhas.add(pw.SizedBox(height: 16));
+    linhas.add(buildPdfHeader(branding, logo: logo));
+  linhas.add(
+    pw.Text('Extrato Financeiro - $mesAno',
+      style: pw.TextStyle(
+        fontSize: 16, fontWeight: pw.FontWeight.bold)),
+  );
+  linhas.add(pw.SizedBox(height: 8));
 
     // Ordenar: entradas primeiro, depois saídas
     final transacoesOrdenadas = [
@@ -417,19 +418,19 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
             children: [
               pw.Text('Data',
                   style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.Text('Tipo',
                   style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.Text('Descrição',
                   style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.Text('Valor',
                   style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.Text('Lançado por',
                   style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             ],
           ),
           ...transacoesOrdenadas.map((t) {
@@ -438,22 +439,19 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
             return pw.TableRow(
               children: [
                 pw.Text(
-                    DateFormat('dd/MM/yyyy').format(DateTime.parse(t['data'])),
-                    style: pw.TextStyle(font: font)),
+                    DateFormat('dd/MM/yyyy').format(DateTime.parse(t['data']))),
                 pw.Text(
                   isEntrada ? 'Entrada' : 'Saída',
                   style: pw.TextStyle(
                     color: isEntrada
                         ? PdfColor.fromInt(0xFF388E3C)
                         : PdfColor.fromInt(0xFFD32F2F),
-                    font: font,
                   ),
                 ),
-                pw.Text(t['descricao'], style: pw.TextStyle(font: font)),
+                pw.Text(t['descricao']),
                 pw.Text(
-                    'R\$ ${double.parse(t['valor'].toString()).toStringAsFixed(2)}',
-                    style: pw.TextStyle(font: font)),
-                pw.Text(nomeUsuarioLancou, style: pw.TextStyle(font: font)),
+                    'R\$ ${double.parse(t['valor'].toString()).toStringAsFixed(2)}'),
+                pw.Text(nomeUsuarioLancou),
               ],
             );
           }),
@@ -465,14 +463,14 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Total Entradas: R\$ ${_totalEntradas.toStringAsFixed(2)}',
-              style: pw.TextStyle(
-                  color: PdfColor.fromInt(0xFF388E3C), font: font)),
-          pw.Text('Total Saídas: R\$ ${_totalSaidas.toStringAsFixed(2)}',
-              style: pw.TextStyle(
-                  color: PdfColor.fromInt(0xFFD32F2F), font: font)),
-          pw.Text('Saldo: R\$ ${_saldoAtual.toStringAsFixed(2)}',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: font)),
+      pw.Text('Total Entradas: R\$ ${_totalEntradas.toStringAsFixed(2)}',
+        style: pw.TextStyle(
+          color: PdfColor.fromInt(0xFF388E3C))),
+      pw.Text('Total Saídas: R\$ ${_totalSaidas.toStringAsFixed(2)}',
+        style: pw.TextStyle(
+          color: PdfColor.fromInt(0xFFD32F2F))),
+      pw.Text('Saldo: R\$ ${_saldoAtual.toStringAsFixed(2)}',
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ],
       ),
     );
@@ -486,9 +484,7 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
             pw.Container(
                 height: 1, width: 200, color: PdfColor.fromInt(0xFF000000)),
             pw.SizedBox(height: 4),
-            pw.Text(nome,
-                style: pw.TextStyle(font: font),
-                textAlign: pw.TextAlign.center),
+            pw.Text(nome, textAlign: pw.TextAlign.center),
             pw.SizedBox(height: 16),
           ],
         ),
@@ -496,9 +492,9 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
     }
     linhas.add(pw.SizedBox(height: 16));
     linhas.add(pw.Text('Local/Data: ___________________________',
-        style: pw.TextStyle(fontSize: 14, font: font)));
+        style: pw.TextStyle(fontSize: 14)));
 
-    pdf.addPage(
+    doc.addPage(
       pw.Page(
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -508,7 +504,7 @@ class _TesoureiroPageState extends State<TesoureiroPage> {
     );
 
     await Printing.sharePdf(
-        bytes: await pdf.save(),
+        bytes: await doc.save(),
         filename:
             'extrato_financeiro_${DateFormat('MM_yyyy').format(_mesFiltro)}.pdf');
   }
